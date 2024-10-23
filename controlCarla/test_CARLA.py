@@ -7,7 +7,7 @@ import time
 
 # Connect to world
 client = carla.Client('localhost', 2000)    # Connect to the simulator, 2000 is default port
-world = client.get_wordl()                  # Contains everything (vehicles, pedestrians, roads, ...)
+world = client.get_world()                  # Contains everything (vehicles, pedestrians, roads, ...)
 bp_lib = world.get_blueprint_library()      # Contains blueprints of all objects in world
 
 # Spawn a vehicle
@@ -17,9 +17,8 @@ vehicle = world.try_spawn_actor(vehicle_bp, random.choice(spawn_points))    # TR
 
 # Activate spectator mode to fly around the world
 spectator = world.get_spectator()
-vehc_transform = carla.Transform(vehicle.get_transform(carla.Location(x=-4, z=2.5)), vehicle.get_transformation())
-spectator.set_transform(vehc_transform)
 
+print("Adding vehicles")
 # Add more vehicles
 num_vehc = 20
 for i in range(num_vehc):
