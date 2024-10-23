@@ -45,6 +45,9 @@ class DataConverter:
         return boundingboxes_per_class
 
     def convert_data(self, first_index, train_percentage):
+        # We print some information
+        print('Converting data in folder ' + self.input_dir)
+
         # We keep track of this index to make sure that we know what the last index of the image was that we added.
         current_index = first_index
 
@@ -62,7 +65,7 @@ class DataConverter:
 
         # we check wether the amount of images is the same
         if len(seg_image_files) != len(normal_image_files):
-            print('Error in folder ' + self.input_dir + ': Amount of segmented and normal images should be the same!')
+            print('Error in folder ' + self.input_dir + ': Amount of segmented and normal images should be the same!\n')
         else:
             # We define how many training images we have
             num_training_images = int(len(seg_image_files)*train_percentage)
@@ -104,7 +107,7 @@ class DataConverter:
                                 file.write(bbox_string + '\n')
                         class_index += 1
                 current_index += 1
-            print('Succesfully converted the data!')
+            print('Succesfully converted the data!\n')
         return current_index
 
 

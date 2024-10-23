@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import cv2
 import matplotlib.pyplot as plt
+import os
 
 class ObjectLocalizationModel:
 
@@ -10,6 +11,22 @@ class ObjectLocalizationModel:
     def forward(self, image_path):
         results = self.model(image_path)
         return results
+
+    def train_model(self, yaml_file, num_epochs, batch_size = 16):
+        results = self.model.train(data=yaml_file, epochs= num_epochs, imgsz=640, batch= batch_size)
+        return results
+
+
+    def testYoloModel(self, test_folder = 'captured_data/cloudy_night/custom_data'):
+        # get the image files
+        image_files = [f for f in os.listdir(test_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
+
+        # Loop over the images
+        for image_file in image_files:
+            image_path = os.path.join(test_folder, image_file)
+            results = self.forward(image_path)
+            self.visualize_results(results, image_path)
+    
 
     def visualize_results(self, results, image_path):
         object_classes = results[0].boxes.cls.to('cpu').tolist()
@@ -34,7 +51,3 @@ class ObjectLocalizationModel:
         ax = fig.add_subplot(1, 1, 1)
         ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         plt.show()
-
-    def train_model(self, yaml_file, num_epochs, batch_size = 16):
-        results = self.model.train(data=yaml_file, epochs= num_epochs, imgsz=640, batch= batch_size)
-        return results
