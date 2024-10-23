@@ -89,7 +89,9 @@ seg_info = np.zeros((540, 960, 3), dtype="i")
 # Creates Directory
 dir_rgb = 'custom_data/'
 dir_seg = 'SegmentationImage/'
-dir_radar = 'radar_data/'
+dir_radar = 'RadarData/'
+dir_lidar = 'LiDARData/'
+dir_depth = 'DepthImages'
 dir_pbbox = 'PedestrianBBox/'
 dir_vbbox = 'VehicleBBox/'
 if not os.path.exists(dir_rgb):
@@ -102,6 +104,10 @@ if not os.path.exists(dir_vbbox):
     os.makedirs(dir_vbbox)
 if not os.path.exists(dir_radar):
     os.makedirs(dir_radar)
+if not os.path.exists(dir_lidar):
+    os.makedirs(dir_lidar)
+if not os.path.exists(dir_depth):
+    os.makedirs(dir_depth)
 
 # ==============================================================================
 # -- PedestrianBoundingBoxes ---------------------------------------------------
@@ -484,7 +490,7 @@ class BasicSynchronousClient(object):
         weak_self = weakref.ref(self)
         self.camera.listen(lambda image: weak_self().set_image(weak_self, image))
 
-        #Radar
+        #Radar 
         radar_transform = carla.Transform(carla.Location(x=1.6, z=1.7))
         self.camera_radar = self.world.spawn_actor(self.camera_blueprint('sensor.other.radar'), radar_transform, attach_to=self.car)
         weak_self = weakref.ref(self)
@@ -602,7 +608,7 @@ class BasicSynchronousClient(object):
         if self.radar_record:
             # Extracting radar data and saving it to a file
             points = np.frombuffer(radar_data.raw_data, dtype=np.float32).reshape(-1, 4)
-            # Save the radar data to a text file
+            # Save the radar data to a text file (azimuth, altitude, sensor and velocity)
             np.savetxt('RadarData/radar' + str(self.image_count) + '.txt', points)
             print("RadarData")
 
@@ -616,7 +622,7 @@ class BasicSynchronousClient(object):
         if self.lidar_record:
             # Extract LiDAR points and save to a file
             points = np.frombuffer(lidar_data.raw_data, dtype=np.float32).reshape(-1, 4)
-            # Save the LiDAR points to a text file
+            # Save the LiDAR points to a text file (xyz coordinates, intensity loss)
             np.savetxt('LiDARData/lidar' + str(self.image_count) + '.txt', points)
             print("LiDARData")
 
