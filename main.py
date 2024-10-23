@@ -1,8 +1,10 @@
 import RegressionModel
 import ObjectLocalizationModel
+import DataConverter
 import torch.nn as nn
 import torch.optim as optim
 import os
+import numpy as np
 
 LEARNING_RATE = 0.001
 
@@ -20,15 +22,22 @@ def testYoloModel():
         yolo_model.visualize_results(results, image_path)
 
 def main():
-    testYoloModel()
+    # This map contains all the info as: label: [color, dilation_kernel_size, min_area_boundingbox]
+    class_color_info_map = {'car': [np.array([0, 0, 142]), 10, 250],
+                'motorcycle': [np.array([0, 0, 230]), 10, 250],
+                'truck': [np.array([0, 0, 70]), 10, 250],
+                'pedestrian': [np.array([220, 20, 60]), 8, 200],
+                'traffic signs': [np.array([220, 220, 0]), 1, 150],
+                'traffic lights': [np.array([250, 170, 30]), 1, 150]}
+    
+    data_converter = DataConverter.DataConverter("captured_data/noon", "test", class_color_info_map)
 
-    model = RegressionModel.RegressionModel()
-
-    # These are great choices when training a regression model
-    criterion = nn.SmoothL1Loss()
-    optimizer = optim.Adam(model.parameters(), LEARNING_RATE)
-
-    #model.train_model(optimizer, criterion)
+    image_path = DATA_FOLDER + "/segmentation image/seg114.png"
+    data_converter.create_data_folders()
+    bounding_boxes = get_2D_bounding_box_from_segmeted_image(image_path, class_color_info_map)
+    draw_rectangles(image_path, bounding_boxes)
+    
+    
 
 if __name__ == "__main__":
     main()
