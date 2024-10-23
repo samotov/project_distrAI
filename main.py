@@ -33,6 +33,10 @@ def main():
     data_converter = DataConverter.DataConverter("captured_data/noon", "test", class_color_info_map)
 
     data_converter.convert_data(1, 0.8)
+
+    yolomodel = ObjectLocalizationModel.ObjectLocalizationModel()
+    results = yolomodel.train_model('test.yaml', 50, 16)
+    results.show()
     
     
 

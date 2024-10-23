@@ -65,16 +65,18 @@ class DataConverter:
 
         # We assume that the images have the same index at the end
         for image_index in range(len(seg_image_files)):
+            # We define wether we want this image to be a train image or a validation image
             mode = 'train' if image_index < num_training_images else 'val'
 
             # We identify all the paths that we need
             seg_image_path = os.path.join(seg_folder, seg_image_files[image_index])
             normal_image_input_path = os.path.join(normal_folder, normal_image_files[image_index])
-            normal_image_output_path = os.path.join(self.output_dir, 'images', mode, str(current_index) + '.png')
-            labels_ouput_path = os.path.join(self.output_dir, 'labels', mode, str(current_index) + '.txt')
+            normal_image_output_path = os.path.join('datasets', self.output_dir, 'images', mode, str(current_index) + '.png')
+            labels_ouput_path = os.path.join('datasets', self.output_dir, 'labels', mode, str(current_index) + '.txt')
 
-            # We read and write the normal image to the correct path
+            # We read the image get the width and the height and write the normal image to the correct path
             normal_image = cv2.imread(normal_image_input_path)
+            height, width, _ = normal_image.shape
             cv2.imwrite(normal_image_output_path, normal_image)
 
             # We get the bounding boxes from the image
@@ -83,11 +85,18 @@ class DataConverter:
             # We write the bounding box data in the correct format to the .txt file
             with open(labels_ouput_path, 'w') as file:
                 class_index = 0
-                for label, bboxes in bounding_boxes.items():
+                for _ , bboxes in bounding_boxes.items():
                     if len(bboxes) != 0:
                         for bbox in bboxes:
-                            bbox_string = str(class_index) + ' '
-                            bbox_string += ' '.join(map(str, bbox))
+                            # We normalize the bbox values
+                            x, y, w, h = bbox
+                            norm_x = x / width
+                            norm_y = y / height
+                            norm_w = w / width
+                            norm_h = h / height
+
+                            # We define the string and write it to the .txt file
+                            bbox_string = str(class_index) + ' ' + str(norm_x) + ' ' + str(norm_y) + ' ' + str(norm_w) + ' ' + str(norm_h)
                             file.write(bbox_string + '\n')
                     class_index += 1
             current_index += 1
@@ -122,7 +131,7 @@ class DataConverter:
         # We loop through each folder and create it
         for folder in folders:
             # Create the full path
-            folder_path = os.path.join(self.output_dir, folder)
+            folder_path = os.path.join('datasets', self.output_dir, folder)
 
             # Check if the folder already exists, if not, create it
             if not os.path.exists(folder_path):
@@ -132,12 +141,12 @@ class DataConverter:
                 print(f"Folder already exists: {folder_path}")
 
     def create_yaml_file(self):
-        yaml_path = os.path.join(self.output_dir, "custom_data.yaml")
+        yaml_path = self.output_dir + ".yaml"
         # We define the content for the YAML file
 
         data = {
-            'train': os.path.join(self.output_dir, "train"),    # Path to the training data
-            'val': os.path.join(self.output_dir, "val"),        # Path to the validation data
+            'train': os.path.join(self.output_dir, "images", "train"),    # Path to the training data
+            'val': os.path.join(self.output_dir, "images", "val"),        # Path to the validation data
             'nc': len(self.class_color_info_map.keys()),        # Number of classes
             'names': list(self.class_color_info_map.keys())     # List of class names
         }

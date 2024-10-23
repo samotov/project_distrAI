@@ -34,3 +34,7 @@ class ObjectLocalizationModel:
         ax = fig.add_subplot(1, 1, 1)
         ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         plt.show()
+
+    def train_model(self, yaml_file, num_epochs, batch_size = 16):
+        results = self.model.train(data=yaml_file, epochs= num_epochs, imgsz=640, batch= batch_size)
+        return results
