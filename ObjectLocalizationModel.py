@@ -8,12 +8,15 @@ class ObjectLocalizationModel:
     def __init__(self):
         self.model = YOLO('yolov8s.pt')
 
+    def __init__(self, weights):
+        self.model = YOLO(weights)
+
     def forward(self, image_path):
         results = self.model(image_path)
         return results
 
-    def train_model(self, yaml_file, num_epochs, batch_size = 16):
-        results = self.model.train(data=yaml_file, epochs= num_epochs, imgsz=640, batch= batch_size)
+    def train_model(self, yaml_file, num_epochs, batch_size = 16, image_conversion_size = 640):
+        results = self.model.train(data=yaml_file, epochs= num_epochs, imgsz=image_conversion_size, batch= batch_size)
         return results
 
 
