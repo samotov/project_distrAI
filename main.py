@@ -32,10 +32,7 @@ def main():
     
     data_converter = DataConverter.DataConverter("captured_data/noon", "test", class_color_info_map)
 
-    image_path = DATA_FOLDER + "/segmentation image/seg114.png"
-    data_converter.create_data_folders()
-    bounding_boxes = get_2D_bounding_box_from_segmeted_image(image_path, class_color_info_map)
-    draw_rectangles(image_path, bounding_boxes)
+    data_converter.convert_data(1, 0.8)
     
     
 

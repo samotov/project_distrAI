@@ -44,7 +44,7 @@ class DataConverter:
 
         return boundingboxes_per_class
 
-    def convert_data(self, first_index):
+    def convert_data(self, first_index, train_percentage):
         # We keep track of this index to make sure that we know what the last index of the image was that we added.
         current_index = first_index
 
@@ -52,16 +52,44 @@ class DataConverter:
         self.create_data_folders()
         self.create_yaml_file()
 
+        # We define our segmented images and normal images foldes
+        seg_folder = os.path.join(self.input_dir, 'segmentation image')
+        normal_folder = os.path.join(self.input_dir, 'custom_data')
+
         # We get all the image files
-        image_files = [f for f in os.listdir(self.input_dir) if f.endswith(('.jpg', '.png', '.jpeg'))]
+        seg_image_files = [f for f in os.listdir(seg_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
+        normal_image_files = [f for f in os.listdir(normal_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
 
-        for image in image_files:
-            image_path = os.path.join(self.input_dir, "segmentation image",image)
-            bounding_boxes = self.get_2D_bounding_box_from_segmeted_image(image_path)
+        # We define how many training images we have
+        num_training_images = int(len(seg_image_files)*train_percentage)
 
-            for label in bounding_boxes.keys():
-                print('test')
-                # add bounding box data and image data to the correct folder
+        # We assume that the images have the same index at the end
+        for image_index in range(len(seg_image_files)):
+            mode = 'train' if image_index < num_training_images else 'val'
+
+            # We identify all the paths that we need
+            seg_image_path = os.path.join(seg_folder, seg_image_files[image_index])
+            normal_image_input_path = os.path.join(normal_folder, normal_image_files[image_index])
+            normal_image_output_path = os.path.join(self.output_dir, 'images', mode, str(current_index) + '.png')
+            labels_ouput_path = os.path.join(self.output_dir, 'labels', mode, str(current_index) + '.txt')
+
+            # We read and write the normal image to the correct path
+            normal_image = cv2.imread(normal_image_input_path)
+            cv2.imwrite(normal_image_output_path, normal_image)
+
+            # We get the bounding boxes from the image
+            bounding_boxes = self.get_2D_bounding_box_from_segmeted_image(seg_image_path)
+
+            # We write the bounding box data in the correct format to the .txt file
+            with open(labels_ouput_path, 'w') as file:
+                class_index = 0
+                for label, bboxes in bounding_boxes.items():
+                    if len(bboxes) != 0:
+                        for bbox in bboxes:
+                            bbox_string = str(class_index) + ' '
+                            bbox_string += ' '.join(map(str, bbox))
+                            file.write(bbox_string + '\n')
+                    class_index += 1
             current_index += 1
         return current_index
 
@@ -106,11 +134,12 @@ class DataConverter:
     def create_yaml_file(self):
         yaml_path = os.path.join(self.output_dir, "custom_data.yaml")
         # We define the content for the YAML file
+
         data = {
             'train': os.path.join(self.output_dir, "train"),    # Path to the training data
             'val': os.path.join(self.output_dir, "val"),        # Path to the validation data
             'nc': len(self.class_color_info_map.keys()),        # Number of classes
-            'names': self.class_color_info_map.keys()           # List of class names
+            'names': list(self.class_color_info_map.keys())     # List of class names
         }
 
         # We write the data to the YAML file
