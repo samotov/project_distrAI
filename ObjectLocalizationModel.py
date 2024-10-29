@@ -20,7 +20,7 @@ class ObjectLocalizationModel:
         return results
 
 
-    def testYoloModel(self, test_folder = 'captured_data/cloudy_night/custom_data'):
+    def testYoloModel(self, test_folder):
         # get the image files
         image_files = [f for f in os.listdir(test_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
 
