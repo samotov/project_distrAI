@@ -1,4 +1,4 @@
-import ObjectLocalizationModel
+from models import ObjectLocalizationModel
 import argparse
 
 parser = argparse.ArgumentParser(description="Argument parsers ")

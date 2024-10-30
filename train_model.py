@@ -1,4 +1,4 @@
-import ObjectLocalizationModel
+from models import ObjectLocalizationModel
 import argparse
 
 def train_model(number_of_epochs, dataset):
