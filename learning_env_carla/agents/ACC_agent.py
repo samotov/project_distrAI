@@ -103,6 +103,10 @@ class ACCAgent(BasicAgent):
         # Calculate the distance at which the vehicle should react        
         max_vehicle_distance = self._base_vehicle_threshold + vehicle_speed
 
+        # Get RGB and depth image
+        RGB_image = self._get_RGB_image()
+        depth_image = self._get_depth_image()
+
         # Get all the boundingboxes from vehicles in the area        
         vehicle_list = self._object_detector.extract_objects_from_surrounding(RGB_image, depth_image)
         
@@ -161,3 +165,9 @@ class ACCAgent(BasicAgent):
         Check if there are vehicles to be concerned about
         """
         return False, None, 0
+
+    def _get_depth_image(self):
+        pass
+
+    def _get_RGB_image(self):
+        pass
