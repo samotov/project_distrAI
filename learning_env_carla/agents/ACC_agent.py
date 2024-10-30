@@ -12,6 +12,7 @@ It can also make use of the global route planner to follow a specifed route
 import carla
 
 from agents.navigation.basic_agent import BasicAgent
+from sensors import ObjectDetector
 
 class ACCAgent(BasicAgent):
     """
@@ -39,6 +40,7 @@ class ACCAgent(BasicAgent):
         self._current_speed = vehicle.get_velocity().length()  # [m/s]
         self._constant_velocity_stop_time = None
         self._collision_sensor = None
+        self._object_detector = None
 
         self._restart_time = float('inf')  # Time after collision before the constant velocity behavior starts again
 
@@ -50,6 +52,7 @@ class ACCAgent(BasicAgent):
         self.is_constant_velocity_active = True
         self._set_collision_sensor()
         self._set_constant_velocity(target_speed)
+        self._set_object_detector()
 
     def set_target_speed(self, speed):
         """Changes the target speed of the agent [km/h]"""
@@ -71,6 +74,10 @@ class ACCAgent(BasicAgent):
         """Forces the agent to drive at the specified speed"""
         self._vehicle.enable_constant_velocity(carla.Vector3D(speed, 0, 0))
 
+    def _set_object_detector(self):
+        """Instantiate the object detector"""
+        self._object_detector = ObjectDetector()
+
     def run_step(self):
         """Execute one step of navigation."""
         if not self.is_constant_velocity_active:
@@ -90,13 +97,17 @@ class ACCAgent(BasicAgent):
         # Get current vehicle speed to calculate radius in which to check for cars/lights
         vehicle_speed = self._vehicle.get_velocity().length()
 
-
+        # Check if the vehicle is affected by other vehicles. 
         # TODO: Use computer vision for this.
         # =====================================================================================================
-        # Check if the vehicle is affected by other vehicles. 
-        vehicle_list = actor_list.filter("*vehicle*")
+        # Calculate the distance at which the vehicle should react        
         max_vehicle_distance = self._base_vehicle_threshold + vehicle_speed
-        affected_by_vehicle, adversary, _ = self._vehicle_obstacle_detected(vehicle_list, max_vehicle_distance)
+
+        # Get all the boundingboxes from vehicles in the area        
+        vehicle_list = self._object_detector.extract_objects_from_surrounding(RGB_image, depth_image)
+        
+        # Check if vehicle is in the range of concern
+        affected_by_vehicle, vehicle, distance = self._vehicle_obstacle_detected(vehicle_list, max_vehicle_distance)
         if affected_by_vehicle:
 
             # TODO: use RL agent to determine velocity
@@ -144,3 +155,9 @@ class ACCAgent(BasicAgent):
         if self._collision_sensor:
             self._collision_sensor.destroy()
             self._collision_sensor = None
+
+    def _vehicle_obstacle_detected(vehicle_list, max_vehicle_distance):
+        """
+        Check if there are vehicles to be concerned about
+        """
+        return False, None, 0
