@@ -2,7 +2,7 @@ from models import ObjectLocalizationModel
 import argparse
 
 def train_model(number_of_epochs, dataset):
-    yolomodel = ObjectLocalizationModel.ObjectLocalizationModel()
+    yolomodel = ObjectLocalizationModel.ObjectLocalizationModel(None)
 
     yolomodel.train_model(dataset + '.yaml', number_of_epochs, 16)
 
