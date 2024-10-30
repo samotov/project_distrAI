@@ -1,0 +1,172 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import cv2\r\nimport numpy as np\r\nimport matplotlib.pyplot as plt\r\n\r\n# Load the uploaded image\r\nimage_path = 'C:/Users/rehma/Downloads/re.jpg'\r\ngray_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)\r\n\r\ndef calculate_distance_map(gray_img, max_distance):\r\n    \"\"\"\r\n    Calculate the distance map from a grayscale depth image, mapping intensities to distances.\r\n    \r\n    Args:\r\n    gray_img (numpy.ndarray): Grayscale image from the depth camera.\r\n    max_distance (float): The maximum measurable distance by the camera in meters.\r\n    \r\n    Returns:\r\n    numpy.ndarray: A distance map where each value represents the distance in meters.\r\n    \"\"\"\r\n    normalized_gray = gray_img / 255.0  # Normalize grayscale intensities to [0, 1]\r\n    distance_map = max_distance * (1 - normalized_gray)  # Closer objects have lower intensities\r\n    return distance_map\r\n\r\ndef detect_and_measure_objects(gray_img, distance_map, intensity_threshold=30):\r\n    \"\"\"\r\n    Detect objects based on intensity and measure their distance in meters.\r\n    \r\n    Args:\r\n    gray_img (numpy.ndarray): Grayscale image from the depth camera.\r\n    distance_map (numpy.ndarray): Precomputed distance map in meters.\r\n    intensity_threshold (int): Threshold to binarize the image for object detection.\r\n    \r\n    Returns:\r\n    list: List of detected objects with their average distance and centroid coordinates.\r\n    \"\"\"\r\n    _, binary_img = cv2.threshold(gray_img, intensity_threshold, 255, cv2.THRESH_BINARY_INV)\r\n    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_img, connectivity=8)\r\n    \r\n    object_distances = []\r\n    for label in range(1, num_labels):  # Label 0 is the background\r\n        object_mask = (labels == label)\r\n        object_distance = np.mean(distance_map[object_mask])\r\n        object_distances.append({\r\n            'centroid': centroids[label],\r\n            'bounding_box': stats[label][:4],  # (x, y, width, height)\r\n            'distance': object_distance\r\n        })\r\n    \r\n    return object_distances\r\n\r\ndef draw_scale(image, max_distance, image_width, image_height):\r\n    \"\"\"\r\n    Draws scale on the X and Y axes in meters.\r\n    \r\n    Args:\r\n    image (numpy.ndarray): The image to draw the scale on.\r\n    max_distance (float): Maximum distance for the depth camera (in meters).\r\n    image_width (int): The width of the image.\r\n    image_height (int): The height of the image.\r\n    \r\n    Returns:\r\n    numpy.ndarray: The image with the scale drawn.\r\n    \"\"\"\r\n    scale_color = (0, 255, 255)  # Yellow for scale lines\r\n    step_size_x = int(image_width / 10)\r\n    step_size_y = int(image_height / 10)\r\n    \r\n    for i in range(1, 11):\r\n        # Scale lines on X-axis\r\n        cv2.line(image, (i * step_size_x, 0), (i * step_size_x, image_height), scale_color, 1)\r\n        cv2.putText(image, f\"{i * max_distance / 10:.1f}m\", (i * step_size_x, image_height - 10),\r\n                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, scale_color, 1)\r\n        \r\n        # Scale lines on Y-axis\r\n        cv2.line(image, (0, i * step_size_y), (image_width, i * step_size_y), scale_color, 1)\r\n        cv2.putText(image, f\"{i * max_distance / 10:.1f}m\", (5, i * step_size_y),\r\n                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, scale_color, 1)\r\n    \r\n    return image\r\n\r\n# Define the maximum distance (50 meters as per your camera's range)\r\nmax_distance = 50.0  # 50 meters\r\n\r\n# Step 1: Calculate the distance map (in meters)\r\ndistance_map = calculate_distance_map(gray_image, max_distance)\r\n\r\n# Step 2: Detect objects and measure their distances\r\ndetected_objects = detect_and_measure_objects(gray_image, distance_map)\r\n\r\n# Step 3: Create a copy of the original image to mark objects\r\noutput_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)\r\n\r\n# Step 4: Mark objects by drawing bounding boxes around them\r\nfor obj in detected_objects:\r\n    centroid_x, centroid_y = obj['centroid']\r\n    distance = obj['distance']\r\n    x, y, w, h = obj['bounding_box']  # Bounding box coordinates\r\n    \r\n    print(f\"Object at distance: {distance:.2f} meters, Coordinates: (x: {int(centroid_x)}, y: {int(centroid_y)}), Bounding Box: (x: {x}, y: {y}, w: {w}, h: {h})\")\r\n    \r\n    cv2.rectangle(output_image, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Blue bounding box\r\n    cv2.putText(output_image, f\"{distance:.2f}m\", (int(centroid_x), int(centroid_y) - 10),\r\n                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)\r\n\r\n# Step 5: Add scale to the image (on both X and Y axes)\r\nimage_height, image_width = gray_image.shape[:2]\r\noutput_image_with_scale = draw_scale(output_image, max_distance, image_width, image_height)\r\n\r\n# Step 6: Display the processed images\r\nplt.figure(figsize=(10, 5))\r\nplt.subplot(1, 2, 1)\r\nplt.imshow(gray_image, cmap='gray')\r\nplt.title('Original Depth Image')\r\n\r\nplt.subplot(1, 2, 2)\r\nplt.imshow(cv2.cvtColor(output_image_with_scale, cv2.COLOR_BGR2RGB))\r\nplt.title('Objects Detected and Marked with Scale')\r\n\r\nplt.show()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 433160dd09a0d0efb2881e99a2cb9b71ceeec0cf)
++++ b/main.py	(date 1729758405526)
+@@ -1,119 +1,54 @@
+-import cv2
+ import numpy as np
+-import matplotlib.pyplot as plt
++import cv2
++import carla
+ 
+-# Load the uploaded image
+-image_path = 'C:/Users/rehma/Downloads/re.jpg'
+-gray_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+ 
+-def calculate_distance_map(gray_img, max_distance):
++def get_depth_at_pixel(depth_image, x, y):
++    """
++    Convert CARLA depth image pixel to depth in meters.
+     """
+-    Calculate the distance map from a grayscale depth image, mapping intensities to distances.
+-    
+-    Args:
+-    gray_img (numpy.ndarray): Grayscale image from the depth camera.
+-    max_distance (float): The maximum measurable distance by the camera in meters.
+-    
+-    Returns:
+-    numpy.ndarray: A distance map where each value represents the distance in meters.
++    # Convert from 8-bit normalized depth value to 32-bit float
++    depth = depth_image[y, x] / 255.0
++    # Calculate depth in meters (CARLA scales from 0.1 to 1000 meters)
++    depth_in_meters = 1000.0 * depth
++    return depth_in_meters
++
++
++def closest_point_in_bbox(depth_image, bbox):
+     """
+-    normalized_gray = gray_img / 255.0  # Normalize grayscale intensities to [0, 1]
+-    distance_map = max_distance * (1 - normalized_gray)  # Closer objects have lower intensities
+-    return distance_map
++    Calculate the closest point within a bounding box in a depth image.
+ 
+-def detect_and_measure_objects(gray_img, distance_map, intensity_threshold=30):
+-    """
+-    Detect objects based on intensity and measure their distance in meters.
+-    
+     Args:
+-    gray_img (numpy.ndarray): Grayscale image from the depth camera.
+-    distance_map (numpy.ndarray): Precomputed distance map in meters.
+-    intensity_threshold (int): Threshold to binarize the image for object detection.
+-    
++        depth_image: Depth image from CARLA (numpy array)
++        bbox: Bounding box (x1, y1, x2, y2) where (x1, y1) is the top-left and (x2, y2) is the bottom-right
++
+     Returns:
+-    list: List of detected objects with their average distance and centroid coordinates.
++        (min_depth, (x, y)): Closest depth value and its corresponding (x, y) position in the bbox.
+     """
+-    _, binary_img = cv2.threshold(gray_img, intensity_threshold, 255, cv2.THRESH_BINARY_INV)
+-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_img, connectivity=8)
+-    
+-    object_distances = []
+-    for label in range(1, num_labels):  # Label 0 is the background
+-        object_mask = (labels == label)
+-        object_distance = np.mean(distance_map[object_mask])
+-        object_distances.append({
+-            'centroid': centroids[label],
+-            'bounding_box': stats[label][:4],  # (x, y, width, height)
+-            'distance': object_distance
+-        })
+-    
+-    return object_distances
++    x1, y1, x2, y2 = bbox
+ 
+-def draw_scale(image, max_distance, image_width, image_height):
+-    """
+-    Draws scale on the X and Y axes in meters.
+-    
+-    Args:
+-    image (numpy.ndarray): The image to draw the scale on.
+-    max_distance (float): Maximum distance for the depth camera (in meters).
+-    image_width (int): The width of the image.
+-    image_height (int): The height of the image.
+-    
+-    Returns:
+-    numpy.ndarray: The image with the scale drawn.
+-    """
+-    scale_color = (0, 255, 255)  # Yellow for scale lines
+-    step_size_x = int(image_width / 10)
+-    step_size_y = int(image_height / 10)
+-    
+-    for i in range(1, 11):
+-        # Scale lines on X-axis
+-        cv2.line(image, (i * step_size_x, 0), (i * step_size_x, image_height), scale_color, 1)
+-        cv2.putText(image, f"{i * max_distance / 10:.1f}m", (i * step_size_x, image_height - 10),
+-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, scale_color, 1)
+-        
+-        # Scale lines on Y-axis
+-        cv2.line(image, (0, i * step_size_y), (image_width, i * step_size_y), scale_color, 1)
+-        cv2.putText(image, f"{i * max_distance / 10:.1f}m", (5, i * step_size_y),
+-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, scale_color, 1)
+-    
+-    return image
++    min_depth = float('inf')
++    closest_point = (x1, y1)
++
++    # Iterate over each pixel in the bounding box
++    for y in range(y1, y2):
++        for x in range(x1, x2):
++            depth = get_depth_at_pixel(depth_image, x, y)
++            if depth < min_depth:
++                min_depth = depth
++                closest_point = (x, y)
++
++    return min_depth, closest_point
++
++
++# Example usage:
++# Assuming you have a depth image from CARLA as a numpy array
++depth_image = cv2.imread('depth_image.png', cv2.IMREAD_GRAYSCALE)
++
++# Define the bounding box (x1, y1, x2, y2)
++bbox = (100, 150, 200, 250)
+ 
+-# Define the maximum distance (50 meters as per your camera's range)
+-max_distance = 50.0  # 50 meters
++# Get the closest point within the bbox
++min_depth, closest_point = closest_point_in_bbox(depth_image, bbox)
+ 
+-# Step 1: Calculate the distance map (in meters)
+-distance_map = calculate_distance_map(gray_image, max_distance)
+-
+-# Step 2: Detect objects and measure their distances
+-detected_objects = detect_and_measure_objects(gray_image, distance_map)
+-
+-# Step 3: Create a copy of the original image to mark objects
+-output_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+-
+-# Step 4: Mark objects by drawing bounding boxes around them
+-for obj in detected_objects:
+-    centroid_x, centroid_y = obj['centroid']
+-    distance = obj['distance']
+-    x, y, w, h = obj['bounding_box']  # Bounding box coordinates
+-    
+-    print(f"Object at distance: {distance:.2f} meters, Coordinates: (x: {int(centroid_x)}, y: {int(centroid_y)}), Bounding Box: (x: {x}, y: {y}, w: {w}, h: {h})")
+-    
+-    cv2.rectangle(output_image, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Blue bounding box
+-    cv2.putText(output_image, f"{distance:.2f}m", (int(centroid_x), int(centroid_y) - 10),
+-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+-
+-# Step 5: Add scale to the image (on both X and Y axes)
+-image_height, image_width = gray_image.shape[:2]
+-output_image_with_scale = draw_scale(output_image, max_distance, image_width, image_height)
+-
+-# Step 6: Display the processed images
+-plt.figure(figsize=(10, 5))
+-plt.subplot(1, 2, 1)
+-plt.imshow(gray_image, cmap='gray')
+-plt.title('Original Depth Image')
+-
+-plt.subplot(1, 2, 2)
+-plt.imshow(cv2.cvtColor(output_image_with_scale, cv2.COLOR_BGR2RGB))
+-plt.title('Objects Detected and Marked with Scale')
+-
+-plt.show()
++print(f"Closest point within bbox is at {closest_point} with a depth of {min_depth:.2f} meters")
