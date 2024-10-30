@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp" />
+    <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -131,7 +133,7 @@
       <workItem from="1729924862106" duration="8894000" />
       <workItem from="1730131045112" duration="2248000" />
       <workItem from="1730206302167" duration="1829000" />
-      <workItem from="1730273696393" duration="1258000" />
+      <workItem from="1730273696393" duration="4940000" />
     </task>
     <task id="LOCAL-00001" summary="corrected the camera_bp, lidar_bp and depth_bp">
       <option name="closed" value="true" />
