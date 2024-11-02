@@ -8,10 +8,8 @@ from models import ObjectLocalizationModel
 
 # dataset = args.dataset
 
-dataset = 'datasets/KITTI/Kitti/raw/testing/image_2'
+dataset = 'datasets/captured_data/cloudy_noon/custom_data'
 
 yolomodel = ObjectLocalizationModel.ObjectLocalizationModel('best.pt')
 
-yolomodel.visualize_data(20, 'kitti_transformed')
-
-#yolomodel.testYoloModel(dataset)
+yolomodel.testYoloModel(dataset)
