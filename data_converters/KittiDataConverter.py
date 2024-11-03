@@ -77,10 +77,9 @@ class KittiDataConverter(DataConverter.DataConverter):
                         # The 3D information in meters
                         x_3D, y_3D, z_3D = object['location']
                         heigth_3D, width_3D, length_3D = object['dimensions']
-                        alpha_rotation = object['alpha']
                         rotation_y = object['rotation_y']
 
-                        information_3D_string = str(x_3D) + ' ' + str(y_3D) + ' ' + str(z_3D) + ' ' + str(heigth_3D) + ' ' + str(width_3D) + ' ' + str(length_3D) + ' ' + str(alpha_rotation) + ' ' + str(rotation_y)
+                        information_3D_string = str(x_3D) + ' ' + str(y_3D) + ' ' + str(z_3D) + ' ' + str(heigth_3D) + ' ' + str(width_3D) + ' ' + str(length_3D) + ' ' + str(rotation_y)
                         file.write(information_3D_string + '\n')
             
             bar.update(image_index + 1)

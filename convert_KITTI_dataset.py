@@ -1,5 +1,4 @@
 import torchvision.datasets
-import yaml
 from data_converters import KittiDataConverter
 import argparse
 
