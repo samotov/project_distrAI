@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp">
-      <change afterPath="$PROJECT_DIR$/BetterCarFree/CarFree-main/manual_boundingbox.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BetterCarFree/depth_color.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BetterCarFree/depth_logarithmic.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -67,7 +62,7 @@
     "Python.YOLOtest.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "BetterCarFree",
+    "git-widget-placeholder": "Simple__environment",
     "last_opened_file_path": "C:/Users/vanos_r4p8y9x/Downloads/extract.py.py",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -172,6 +167,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/project_distrAI$ObjectLocalizationModel.coverage" NAME="ObjectLocalizationModel Coverage Results" MODIFIED="1729669065568" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/project_distrAI$YOLOtest.coverage" NAME="YOLOtest Coverage Results" MODIFIED="1729669415894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/project_distrAI$RL_network__1_.coverage" NAME="RL_network (1) Coverage Results" MODIFIED="1730880983092" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/project_distrAI$main.coverage" NAME="main Coverage Results" MODIFIED="1729758150298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
