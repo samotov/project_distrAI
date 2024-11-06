@@ -14,7 +14,7 @@ from gym.envs.classic_control import utils
 from gym.error import DependencyNotInstalled
 
 
-class CartPoleEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
+class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     """
     ### Description
 
@@ -113,8 +113,9 @@ class CartPoleEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             dtype=np.float32,
         )
 
-        self.action_space = spaces.Discrete(2)
-        self.observation_space = spaces.Box(-high, high, dtype=np.float32)
+        # Define your custom observation space and action space for CARLA
+        self.action_space = spaces.Discrete(4)  # Replace with appropriate control actions for CARLA
+        self.observation_space = spaces.Box(low, high, dtype=np.float32)  # Customize based on data type
 
         self.render_mode = render_mode
 
