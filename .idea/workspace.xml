@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp" />
+    <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp">
+      <change afterPath="$PROJECT_DIR$/simple_environment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/extract.py.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/extract_more_sensors.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/generate.py.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/manual_boundingbox.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/spawn.py.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/weather.py.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/depth_color.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BetterCarFree/depth_logarithmic.png" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -60,10 +72,11 @@
   "keyToString": {
     "Python.ObjectLocalizationModel.executor": "Run",
     "Python.YOLOtest.executor": "Run",
+    "Python.cartpole.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "Simple__environment",
-    "last_opened_file_path": "C:/Users/vanos_r4p8y9x/Downloads/extract.py.py",
+    "last_opened_file_path": "C:/Users/vanos_r4p8y9x/PycharmProjects/project_distrAI/project_distrAI",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -167,6 +180,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/project_distrAI$ObjectLocalizationModel.coverage" NAME="ObjectLocalizationModel Coverage Results" MODIFIED="1729669065568" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/project_distrAI$YOLOtest.coverage" NAME="YOLOtest Coverage Results" MODIFIED="1729669415894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/project_distrAI$cartpole.coverage" NAME="cartpole Coverage Results" MODIFIED="1730888917698" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/project_distrAI$RL_network__1_.coverage" NAME="RL_network (1) Coverage Results" MODIFIED="1730880983092" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/project_distrAI$main.coverage" NAME="main Coverage Results" MODIFIED="1729758150298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
