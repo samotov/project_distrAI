@@ -35,6 +35,7 @@ class ObjectLocalizationModel:
         object_classes = results[0].boxes.cls.to('cpu').tolist()
         bboxes_xyxy = results[0].boxes.xyxy.to('cpu').tolist()
         all_class_names = results[0].names
+        print(all_class_names)
         class_names = [all_class_names[int(x)] for x in object_classes]
         img = cv2.imread(image_path)
 

@@ -2,9 +2,9 @@ import cv2
 import os
 import numpy as np
 import yaml
-import DataConverter
+from data_converters import DataConverter
 
-class CapturedDataConverter(DataConverter):
+class CapturedDataConverter(DataConverter.DataConverter):
     def __init__(self, input_dir, output_dir, classes, class_color_info_map):
         super().__init__(input_dir, output_dir, classes)
         self.class_color_info_map = class_color_info_map
@@ -33,12 +33,21 @@ class CapturedDataConverter(DataConverter):
             # Find contours for the masked region
             contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+            print('DEBUG: for image label: ' + label + ' in image: ' + segmented_image_path)
             # Filter the contours and add them to a list+ we also correct for the dilation that we did previously
             boundingboxes = []
             for contour in contours:
                 x, y, w, h = cv2.boundingRect(contour)
+                x += int(dilation_kernel_size/2)
+                y += int(dilation_kernel_size/2)
+                w -= dilation_kernel_size
+                h -= dilation_kernel_size
+                
                 if w*h > min_area_boundingbox:
-                    boundingboxes.append([x + int(dilation_kernel_size/2), y + int(dilation_kernel_size/2), w - dilation_kernel_size, h - dilation_kernel_size])
+                    print('Boundingbox width: ' + str(w))
+                    print('Boundingbox height: ' + str(w))
+                    print('Boundingbox area: ' + str(w*h))
+                    boundingboxes.append([x, y, w, h])
 
             boundingboxes_per_class[label] = boundingboxes
 
@@ -95,10 +104,10 @@ class CapturedDataConverter(DataConverter):
                     for _ , bboxes in bounding_boxes.items():
                         if len(bboxes) != 0:
                             for bbox in bboxes:
-                                # We normalize the bbox values
+                                # We normalize the bbox values and caculated the center coordinates
                                 x, y, w, h = bbox
-                                norm_x = x / width
-                                norm_y = y / height
+                                norm_x = (x + (w/2)) / width
+                                norm_y = (y + (h/2)) / height
                                 norm_w = w / width
                                 norm_h = h / height
     
@@ -106,6 +115,8 @@ class CapturedDataConverter(DataConverter):
                                 bbox_string = str(class_index) + ' ' + str(norm_x) + ' ' + str(norm_y) + ' ' + str(norm_w) + ' ' + str(norm_h)
                                 file.write(bbox_string + '\n')
                         class_index += 1
+                
+                # Write the correct 3D bounding box information into a file
                 current_index += 1
             print('Succesfully converted the data!\n')
         return current_index

@@ -5,11 +5,33 @@ from torch.utils.data import Dataset
 from Boundingbox3D import BoundingBox3D
 import BoundingBoxTransformer
 
+# 0: 'Car', 1: 'Pedestrian', 2: 'Van', 3: 'Cyclist', 4: 'Truck', 5: 'Misc', 6: 'Tram', 7: 'Dontcare'
+
 class BoundingBoxRegressionDataset(Dataset):
 
     def __init__(self, input_folder, transform = None, train = True):
         self.input_folder = input_folder
         self.transform = transform
+
+        # We use these estimations for each class their bouningbox [h, w, l]
+        self.estimated_boundingbox_sizes = {0: [1.5, 1.6, 4.2],     # car
+                                            1: [1.85, 0.4, 0.4],    # pedestrian
+                                            2: [2, 2.2, 5.3],       # van
+                                            3: [1.7, 0.5, 1.95],    # cyclist
+                                            4: [2.85, 2.65, 12.35], # truck
+                                            5: [1.3, 0.8, 1.95],    # misc
+                                            6: [3.6, 2.7, 35.24],   # tram
+                                            7: [0, 0, 0]}           # don't care
+        
+        # One hot encoding of each class that the YoLo model detects
+        self.classes_one_hot_encoding = {0: [1, 0, 0, 0, 0, 0, 0],  # car
+                                         1: [0, 1, 0, 0, 0, 0, 0],  # pedestrian
+                                         2: [0, 0, 1, 0, 0, 0, 0],  # van
+                                         3: [0, 0, 0, 1, 0, 0, 0],  # cyclist
+                                         4: [0, 0, 0, 0, 1, 0, 0],  # truck
+                                         5: [0, 0, 0, 0, 0, 1, 0],  # misc
+                                         6: [0, 0, 0, 0, 0, 0, 1],  # tram
+                                         7: [0, 0, 0, 0, 0, 0, 0]}  # don't care
         self.data = list()
         self.image_boundingbox_data = list()
 
@@ -25,7 +47,7 @@ class BoundingBoxRegressionDataset(Dataset):
         if self.transform:
             features = self.transform(features)
 
-        return features, result.to_tensor()
+        return features, result
 
     def compose_data_lists(self, train):
         # We get a list of all the feature files and assume that the corresponding result file has the same name.
@@ -57,16 +79,19 @@ class BoundingBoxRegressionDataset(Dataset):
                 result_line = results_lines[line_index]
 
                 # We extract the features and the result and put them in a tensor
-                features = torch.tensor([float(feature) for feature in feature_line.split()])
+                features = [float(feature) for feature in feature_line.split()]
                 x, y, z, h, w, l, rot_y = [float(result_value) for result_value in result_line.split()]
+
+                # We replace the class index with the one hot encoding of the class to get the total features
+                total_features = self.classes_one_hot_encoding[features[0]] + features[1:]
 
                 # We transform the bounding box to the other coordinate system
                 boundingbox_transformer = BoundingBoxTransformer.BoundingBoxTransformer(x, y, z, h, w, l, rot_y)
                 point1, point2 = boundingbox_transformer.get_cornerpoints()
-                result = BoundingBox3D(point1, point2)
+                result = BoundingBox3D(point1, point2).get_x_y_centerpoints_tensor()
 
                 # We add the data to the data list
-                self.data.append([features, result])
+                self.data.append([torch.tensor(total_features), result])
                 results.append(result)
 
             # We save the image and results in another list to visualize them together

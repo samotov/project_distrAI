@@ -8,18 +8,20 @@ import matplotlib.pyplot as plt
 class RegressionModel(nn.Module):
     def __init__(self):
         super(RegressionModel, self).__init__()
-        # The input layer of the model has 5 features (2D bbox (xy, xy) (4), class number (1))
-        self.lin1 = nn.Linear(5, 256)
+        # The input layer of the model has 11 features: (class one hot encoding (7) and 2D bbox (xy, xy) (4))
+        self.lin1 = nn.Linear(11, 256)
         self.lin2 = nn.Linear(256, 256)
-        # The output of the model has 2 features (3D location point1 (x, y, z) (3), 3D location point2 (w, h, l) (3)))
-        self.lin3 = nn.Linear(256, 6)
+        self.lin3 = nn.Linear(256, 256)
+        # The output of the model has 6 features (2D location point without height (x, y) (2)))
+        self.lin4 = nn.Linear(256, 2)
 
         self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.relu(self.lin1(x))
         x = self.relu(self.lin2(x))
-        x = self.lin3(x)
+        x = self.relu(self.lin3(x))
+        x = self.lin4(x)
         return x
     
     def train_model(self, optimizer, criterion, train_loader, validation_loader, epochs, model_save_path):
@@ -99,12 +101,15 @@ class RegressionModel(nn.Module):
             features, ground_truth = dataset.__getitem__(i)
             output = self.forward(features)
             # We get the values of the output and the ground truth
-            x1_truth, y1_truth, z1_truth, x2_truth, y2_truth, z2_truth = ground_truth.tolist()
-            x1_out, y1_out, z1_out, x2_out, y2_out, z2_out = output.tolist()
+            #x1_truth, y1_truth, z1_truth, x2_truth, y2_truth, z2_truth = ground_truth.tolist()
+            #x1_out, y1_out, z1_out, x2_out, y2_out, z2_out = output.tolist()
+
+            x1_truth, y1_truth, z1_truth = ground_truth.tolist()
+            x1_out, y1_out, z1_out = output.tolist()
 
             # We compose 2 bounding boxes
-            ground_truth_bbox = BoundingBox3D((x1_truth, y1_truth, z1_truth), (x2_truth, y2_truth, z2_truth))
-            output_bbox = BoundingBox3D((x1_out, y1_out, z1_out), (x2_out, y2_out, z2_out))
+            ground_truth_bbox = BoundingBox3D((x1_truth - 1, y1_truth - 1, z1_truth - 1), (x1_truth + 1, y1_truth + 1, z1_truth + 1))
+            output_bbox = BoundingBox3D((x1_out - 1, y1_out - 1, z1_out - 1), (x1_out + 1, y1_out + 1, z1_out + 1))
 
             # We plot the bounding boxes
             fig = plt.figure()

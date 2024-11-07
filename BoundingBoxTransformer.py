@@ -1,10 +1,12 @@
 import numpy as np
 import math
 
+# Information about the axis of the different sensors:  https://www.cvlibs.net/publications/Geiger2013IJRR.pdf
+
 class BoundingBoxTransformer:
-    def __init__(self, x_center, y_center, z_center, h, w, l, rotation_y):
+    def __init__(self, x_center, y2, z_center, h, w, l, rotation_y):
         self.x_center = x_center
-        self.y_center = y_center
+        self.y2 = y2
         self.z_center = z_center
         self.h = h
         self.w = w
@@ -45,10 +47,10 @@ class BoundingBoxTransformer:
 
         # We calculate the corner coordinates
         x1 = self.x_center - (self.w/2)
-        y1 = self.y_center - (self.h/2)
+        y1 = self.y2 - self.h
         z1 = self.z_center - (self.l/2)
         x2 = self.x_center + (self.w/2)
-        y2 = self.y_center + (self.h/2)
+        y2 = self.y2
         z2 = self.z_center + (self.l/2)
     
         # We define the corner points of the bounding box

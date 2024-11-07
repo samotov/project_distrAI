@@ -1,8 +1,4 @@
-import numpy as np
 import torch
-import math
-
-# Information about the axis of the different sensors: https://towardsdatascience.com/kitti-coordinate-transformations-125094cd42fb
 
 class BoundingBox3D:
 
@@ -23,6 +19,17 @@ class BoundingBox3D:
 
     def get_cornerpoints(self):
         return [self.points[0], self.points[6]]
+    
+    def get_centerpoint_tensor(self):
+        x_center = (self.x1 + self.x2)/2
+        y_center = (self.y1 + self.y2)/2
+        z_center = (self.z1 + self.z2)/2
+        return torch.tensor([x_center, y_center, z_center])
+
+    def get_x_y_centerpoints_tensor(self):
+        x_center = (self.x1 + self.x2)/2
+        y_center = (self.y1 + self.y2)/2
+        return torch.tensor([x_center, y_center])
 
     def visualize_boundingbox(self, ax, color):
         # We define the edges by specifying pairs of points that should be connected

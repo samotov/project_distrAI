@@ -1,8 +1,6 @@
 from data_converters import DataConverter
 import os
 import progressbar
-from PIL import Image
-from PIL import Image, ImageDraw
 
 # Information about the dataset https://medium.com/@abdulhaq.ah/explain-label-file-of-kitti-dataset-738528de36f4
 

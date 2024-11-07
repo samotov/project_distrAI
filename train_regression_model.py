@@ -28,6 +28,4 @@ val_loader = DataLoader(val_dataset, batch_size = 32, shuffle = True)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.MSELoss()
 
-print(train_dataset.__getitem__(1))
-
 model.train_model(optimizer, criterion, train_loader, val_loader, number_of_epochs, weights_location)
