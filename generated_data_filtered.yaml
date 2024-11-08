@@ -1,12 +1,9 @@
 names:
-- Car
-- Pedestrian
-- Van
-- Cyclist
-- Truck
-- Misc
-- Tram
-- Dontcare
-nc: 8
+- car
+- motorcycle
+- truck
+- pedestrian
+- bus
+nc: 5
 train: generated_data_filtered\images\train
 val: generated_data_filtered\images\val

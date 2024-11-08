@@ -33,7 +33,6 @@ class CapturedDataConverter(DataConverter.DataConverter):
             # Find contours for the masked region
             contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            print('DEBUG: for image label: ' + label + ' in image: ' + segmented_image_path)
             # Filter the contours and add them to a list+ we also correct for the dilation that we did previously
             boundingboxes = []
             for contour in contours:
@@ -44,9 +43,6 @@ class CapturedDataConverter(DataConverter.DataConverter):
                 h -= dilation_kernel_size
                 
                 if w*h > min_area_boundingbox:
-                    print('Boundingbox width: ' + str(w))
-                    print('Boundingbox height: ' + str(w))
-                    print('Boundingbox area: ' + str(w*h))
                     boundingboxes.append([x, y, w, h])
 
             boundingboxes_per_class[label] = boundingboxes

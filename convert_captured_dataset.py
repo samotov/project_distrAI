@@ -4,11 +4,11 @@ import argparse
 
 def convert_data(input_dataset, output_dataset, last_index):
     # This map contains all the info as: label: [color, dilation_kernel_size, min_area_boundingbox]
-    class_color_info_map = {'car': [np.array([0, 0, 142]), 10, 300],
+    class_color_info_map = {'car': [np.array([0, 0, 142]), 10, 400],
                 'motorcycle': [np.array([0, 0, 230]), 10, 300],
-                'truck': [np.array([0, 0, 70]), 20, 300],
+                'truck': [np.array([0, 0, 70]), 20, 400],
                 'pedestrian': [np.array([220, 20, 60]), 5, 200],
-                'bus': [np.array([0, 60, 100]), 20, 300],
+                'bus': [np.array([0, 60, 100]), 20, 400],
                 #'traffic signs': [np.array([220, 220, 0]), 1, 150],
                 #'traffic lights': [np.array([250, 170, 30]), 1, 150]
                 }
