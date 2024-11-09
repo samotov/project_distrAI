@@ -5,17 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cc5ae2ed-50c7-4085-91f1-aa680442cd2a" name="Changes" comment="corrected the camera_bp, lidar_bp and depth_bp">
-      <change afterPath="$PROJECT_DIR$/simple_environment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_10_2024_10_21_[Changes]/depth_image.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_10_2024_10_21_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_10_2024_10_21__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_10_2024_10_25_[Changes]/depth_image.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_10_2024_10_25_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_10_2024_10_25__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_10_2024_10_05_[Changes]1/depth_image.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_10_2024_10_05_[Changes]1/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_10_2024_10_05__Changes_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_10_2024_10_18_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_10_2024_10_18__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/extract.py.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/extract_more_sensors.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/generate.py.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/manual_boundingbox.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/spawn.py.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/CarFree-main/weather.py.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/depth_color.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BetterCarFree/depth_logarithmic.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cartpole.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/sense_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_environment.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_rl.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +48,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Depth-Sensing" />
+        <entry key="$PROJECT_DIR$" value="Simple_environment" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -75,7 +80,7 @@
     "Python.cartpole.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Simple__environment",
+    "git-widget-placeholder": "sense__env",
     "last_opened_file_path": "C:/Users/vanos_r4p8y9x/PycharmProjects/project_distrAI/project_distrAI",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -97,7 +102,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="sense_env" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="project_distrAI" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -112,7 +117,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\vanos_r4p8y9x\PycharmProjects\project_distrAI\project_distrAI\sense_env.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -150,6 +155,7 @@
       <workItem from="1730131045112" duration="2248000" />
       <workItem from="1730206302167" duration="1829000" />
       <workItem from="1730273696393" duration="7070000" />
+      <workItem from="1731161235473" duration="2398000" />
     </task>
     <task id="LOCAL-00001" summary="corrected the camera_bp, lidar_bp and depth_bp">
       <option name="closed" value="true" />
