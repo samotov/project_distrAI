@@ -1,6 +1,15 @@
 from data_converters import YoloDatasetFilterer
 import argparse
 
+# Filter dataset keys:
+# ENTER: Save current boundingboxes and image and go to the next image
+# BACKSPACE: Don't save the current boundingboxes and images and go to the next image
+# ARROW_LEFT: Go to the previous image (if you made a mistake) if it's save it should get overwritten by the next data
+# ARROW_UP: Keep this boundingbox and go to the next boundingbox in the image.
+#           This bounding box will be saved when all boundingboxes are iterated or you press ENTER)
+# ARROW_DOWN: Remove this boundingbox and go to the next boundingbox in the image.
+#           This bounding box will not be saved when all boundingboxes are iterated or when you press ENTER)
+
 parser = argparse.ArgumentParser(description="image filtering argument parsers ")
 parser.add_argument("dataset_input", type=str, help="the location of the input dataset in yolo format")
 parser.add_argument("dataset_ouput", type=str, help="the location of the ouput dataset in yolo format")
