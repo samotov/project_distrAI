@@ -104,8 +104,10 @@ class RegressionModel(nn.Module):
             #x1_truth, y1_truth, z1_truth, x2_truth, y2_truth, z2_truth = ground_truth.tolist()
             #x1_out, y1_out, z1_out, x2_out, y2_out, z2_out = output.tolist()
 
-            x1_truth, y1_truth, z1_truth = ground_truth.tolist()
-            x1_out, y1_out, z1_out = output.tolist()
+            x1_truth, y1_truth = ground_truth.tolist()
+            x1_out, y1_out = output.tolist()
+            z1_truth = 1
+            z1_out = 1
 
             # We compose 2 bounding boxes
             ground_truth_bbox = BoundingBox3D((x1_truth - 1, y1_truth - 1, z1_truth - 1), (x1_truth + 1, y1_truth + 1, z1_truth + 1))

@@ -68,21 +68,31 @@ class CapturedDataConverter(DataConverter.DataConverter):
         seg_image_files = [f for f in os.listdir(seg_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
         normal_image_files = [f for f in os.listdir(normal_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
 
-        # we check wether the amount of images is the same
-        if len(seg_image_files) != len(normal_image_files):
-            print('Error in folder ' + self.input_dir + ': Amount of segmented and normal images should be the same!\n')
-        else:
-            # We define how many training images we have
-            num_training_images = int(len(seg_image_files)*train_percentage)
-    
-            # We assume that the images have the same index at the end
-            for image_index in range(len(seg_image_files)):
+        # We define the number of training images
+        num_training_images = int(len(normal_image_files) * train_percentage)
+
+        # We define the start index of each image
+        seg_image_index = 0
+        normal_image_index = 0
+        while seg_image_index < len(seg_image_files) and normal_image_index < len(normal_image_files):
+            # We define the specific number of the images
+            normal_image = normal_image_files[normal_image_index]
+            seg_image = seg_image_files[seg_image_index]
+            normal_image_number = int(normal_image.replace("image", "")[:-4])
+            seg_image_number = int(seg_image.replace("seg", "")[:-4])
+
+            # We check wether the corresponding image exists otherwise we move onto the next one
+            if normal_image_number < seg_image_number:
+                normal_image_index += 1
+            elif normal_image_number > seg_image_number:
+                seg_image_index += 1
+            elif normal_image_number == seg_image_number:
                 # We define wether we want this image to be a train image or a validation image
-                mode = 'train' if image_index < num_training_images else 'val'
+                mode = 'train' if normal_image_index < num_training_images else 'val'
     
                 # We identify all the paths that we need
-                seg_image_path = os.path.join(seg_folder, seg_image_files[image_index])
-                normal_image_input_path = os.path.join(normal_folder, normal_image_files[image_index])
+                seg_image_path = os.path.join(seg_folder, seg_image)
+                normal_image_input_path = os.path.join(normal_folder, normal_image)
                 normal_image_output_path = os.path.join('datasets', self.output_dir, 'images', mode, str(current_index) + '.png')
                 labels_ouput_path = os.path.join('datasets', self.output_dir, 'labels', mode, str(current_index) + '.txt')
     
@@ -112,9 +122,12 @@ class CapturedDataConverter(DataConverter.DataConverter):
                                 file.write(bbox_string + '\n')
                         class_index += 1
                 
-                # Write the correct 3D bounding box information into a file
+                # We update the different indexes
+                normal_image_index += 1
+                seg_image_index += 1
                 current_index += 1
-            print('Succesfully converted the data!\n')
+               
+        print('Succesfully converted the data!\n')
         return current_index
 
 
