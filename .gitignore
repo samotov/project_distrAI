@@ -6,6 +6,7 @@ datasets
 wandb
 runs
 __pycache__
+.vscode
 
 # Files
 yolov8s.pt
