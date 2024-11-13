@@ -1,7 +1,11 @@
 # Folders
 models/object_localization_weights
 models/regression_weights
+models/__pycache__
 datasets
+wandb
+runs
+__pycache__
 
 # Files
 yolov8s.pt
