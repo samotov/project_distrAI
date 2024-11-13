@@ -1,0 +1,7 @@
+# Folders
+models/object_localization_weights
+models/regression_weights
+datasets
+
+# Files
+yolov8s.pt

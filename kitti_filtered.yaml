@@ -1,0 +1,12 @@
+names:
+- Car
+- Pedestrian
+- Van
+- Cyclist
+- Truck
+- Misc
+- Tram
+- Dontcare
+nc: 8
+train: kitti_filtered\images\train
+val: kitti_filtered\images\val
