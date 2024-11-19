@@ -1,6 +1,7 @@
 import os
 import shutil
 import pygame
+import time
 from data_converters import DataConverter
 
 class YoloDatasetFilterer(DataConverter.DataConverter):
@@ -48,7 +49,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
             file_list = [(image_files[file_index] ,label_files[file_index]) for file_index in range(len(image_files))]
 
             # We loop over all the files and order them
-            files_index = 0
+            files_index = start_index
             while files_index < len(file_list):
                 image_file, label_file = file_list[files_index]
                 # We define the specific data folders
@@ -65,6 +66,9 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                 # Get the bounding boxes in the file
                 bounding_boxes = self.get_bounding_boxes(label_input_path)
 
+                # We define the file_index_difference to be 1 (this can be changed to move forward or backwards)
+                file_index_difference = 1
+
                 # We loop over each rectangle to be able to remove or keep it
                 i = 0
                 loop = True
@@ -77,6 +81,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
 
                     # Based on the key that is pressed we add or remove the boundingbox
                     key_number = self.get_key_press()
+                    time.sleep(0.1)
                     if key_number == 1:
                         loop = False
                         make_file = True
@@ -90,7 +95,8 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                         make_file = True
                         i += 1
                     elif key_number == 5:
-                        files_index = max(files_index - 2, 0)
+                        # We go to the previous file
+                        file_index_difference = -1
                         filtered_image_index[mode] = max(filtered_image_index[mode] - 1, 0)
                         loop = False
                         make_file = False
@@ -108,7 +114,9 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                     print('Moved '+ image_input_path + ' to ' + image_output_path)
                     print('Created label file at ' + label_output_path)
                     filtered_image_index[mode] += 1
-                files_index += 1
+                # We update the files index
+                files_index += file_index_difference
+                print("File index: ", files_index)
 
         # Quit pygame
         pygame.quit()

@@ -1,0 +1,9 @@
+names:
+- car
+- motorcycle
+- truck
+- pedestrian
+- bus
+nc: 5
+train: generated_dataset\images\train
+val: generated_dataset\images\val

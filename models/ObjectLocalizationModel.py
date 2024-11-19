@@ -55,12 +55,12 @@ class ObjectLocalizationModel:
         ax = fig.add_subplot(1, 1, 1)
         ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         plt.show(block = False)
-        plt.pause(1)
+        plt.pause(2)
         plt.close()
     
     def visualize_data(self, amount, data_path):
         for i in range(amount):
-            # We initialize the image path and results parg
+            # We initialize the image path and results path
             image_path = os.path.join('datasets', data_path, 'images', 'train', str(i) + '.png')
             results_path = os.path.join('datasets', data_path, 'labels', 'train', str(i) + '.txt')
 

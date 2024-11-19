@@ -1,9 +1,0 @@
-names:
-- car
-- motorcycle
-- truck
-- pedestrian
-- bus
-nc: 5
-train: generated_data_filtered\images\train
-val: generated_data_filtered\images\val

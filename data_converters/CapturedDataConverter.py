@@ -61,8 +61,8 @@ class CapturedDataConverter(DataConverter.DataConverter):
         self.create_yaml_file()
 
         # We define our segmented images and normal images foldes
-        seg_folder = os.path.join(self.input_dir, 'segmentation image')
-        normal_folder = os.path.join(self.input_dir, 'custom_data')
+        seg_folder = os.path.join(self.input_dir, 'segmentation_image')
+        normal_folder = os.path.join(self.input_dir, 'RGB_image')
 
         # We get all the image files
         seg_image_files = [f for f in os.listdir(seg_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]

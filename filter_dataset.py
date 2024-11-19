@@ -22,7 +22,7 @@ dest_dir = args.dataset_ouput
 start_index = args.start_index
 
 dataset_filterer = YoloDatasetFilterer.YoloDatasetFilterer(source_dir, dest_dir, ['car', 'motorcycle', 'truck', 'pedestrian', 'bus'])
-
-dataset_filterer.filter_data(start_index, (960, 540))
+image_size = (960, 540)
+dataset_filterer.filter_data(start_index, image_size)
 
 print("Finished processing all images.")
