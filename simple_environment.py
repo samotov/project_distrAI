@@ -10,11 +10,12 @@ import numpy as np
 
 import gym
 from gym import logger, spaces
-from gym.envs.classic_control import utils
+#from gym.envs.classic_control import utils
 from gym.error import DependencyNotInstalled
+from gym.utils import seeding
 
 
-class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
+class SimpleEnvironment(gym.Env):
     """
     ### Description
 
@@ -87,6 +88,7 @@ class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     }
 
     def __init__(self, render_mode: Optional[str] = None):
+        super().__init__()
         self.gravity = 9.8
         self.masscart = 1.0
         self.masspole = 0.1
@@ -105,16 +107,22 @@ class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # is still within bounds.
         high = np.array(
             [
-                self.x_threshold * 2,
-                np.finfo(np.float32).max,
+                #self.x_threshold * 2,
+                #np.finfo(np.float32).max,
+                #self.theta_threshold_radians * 2,
+                #np.finfo(np.float32).max,
+                self.x_threshold * 2, # Avoid infinite bounds
+                10.0,
                 self.theta_threshold_radians * 2,
-                np.finfo(np.float32).max,
+                10.0,
             ],
             dtype=np.float32,
         )
 
+        low = -high
+
         # Define your custom observation space and action space for CARLA
-        self.action_space = spaces.Discrete(4)  # Replace with appropriate control actions for CARLA
+        self.action_space = spaces.Discrete(2)  # Replace with appropriate control actions for CARLA
         self.observation_space = spaces.Box(low, high, dtype=np.float32)  # Customize based on data type
 
         self.render_mode = render_mode
@@ -127,6 +135,12 @@ class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.state = None
 
         self.steps_beyond_terminated = None
+
+        self.np_random = np.random.RandomState()
+
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     def step(self, action):
         err_msg = f"{action!r} ({type(action)}) invalid"
@@ -160,14 +174,14 @@ class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         self.state = (x, x_dot, theta, theta_dot)
 
-        terminated = bool(
+        done = bool(
             x < -self.x_threshold
             or x > self.x_threshold
             or theta < -self.theta_threshold_radians
             or theta > self.theta_threshold_radians
         )
 
-        if not terminated:
+        if not done:
             reward = 1.0
         elif self.steps_beyond_terminated is None:
             # Pole just fell!
@@ -186,28 +200,23 @@ class SimpleEnvironment(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         if self.render_mode == "human":
             self.render()
-        return np.array(self.state, dtype=np.float32), reward, terminated, False, {}
+        return np.array(self.state, dtype=np.float32), reward, done, {}
 
-    def reset(
-        self,
-        *,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-    ):
-        super().reset(seed=seed)
+    def reset(self):
+        #super().reset(seed=seed)
         # Note that if you use custom reset bounds, it may lead to out-of-bound
         # state/observations.
-        low, high = utils.maybe_parse_reset_bounds(
-            options, -0.05, 0.05  # default low
-        )  # default high
-        self.state = self.np_random.uniform(low=low, high=high, size=(4,))
+        self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
         self.steps_beyond_terminated = None
 
         if self.render_mode == "human":
             self.render()
-        return np.array(self.state, dtype=np.float32), {}
+        return np.array(self.state, dtype=np.float32)
 
-    def render(self):
+    def render(self, mode='human'):
+        if mode is None:
+            mode = self.render_mode
+    
         if self.render_mode is None:
             gym.logger.warn(
                 "You are calling render method without specifying any render mode. "
