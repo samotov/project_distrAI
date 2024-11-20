@@ -22,16 +22,21 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
             class_number, dimentions = bounding_boxes[bbox_index]
             x_center, y_center, w, h = dimentions
 
+            # We get the boundingbox data
             x = int((x_center - (w/2)) * width)
             y = int((y_center - (h/2)) * height)
             w = int(w * width)
             h = int(h * height)
             label = self.classes[int(class_number)]
 
-            if bbox_index == highligted_rectangle:
-                pygame.draw.rect(screen, (0, 255, 0), (x, y, w, h), 3)
-            else:
-                pygame.draw.rect(screen, (255, 0, 0), (x, y, w, h), 3)
+            # Based on the boolean highlighted_rectangle we use a different color
+            color = (0, 255, 0) if bbox_index == highligted_rectangle else (255, 0, 0)
+
+            # We draw the boundingbox and its class above it based on the color
+            pygame.draw.rect(screen, color, (x, y, w, h), 3)
+            font = pygame.font.Font(None, 20)  # None for default font, 36 is the font size
+            text_surface = font.render(str(label), True, color)  # True for anti-aliasing
+            screen.blit(text_surface, (x, y - 15))
 
     def filter_data(self, start_index_org_data, filter_image_index_train, filter_image_index_val):
         # We initialize the indexes for the next validation and training image
@@ -96,9 +101,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                     pygame.display.flip()
 
                     # Based on the key that is pressed we add or remove the boundingbox
-                    print("Before get key press")
                     key_number = self.get_key_press()
-                    print("After get key press")
                     time.sleep(0.1)
                     if key_number == 1:
                         loop = False
@@ -156,7 +159,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
             files_index += file_index_difference
 
             # We print some debug information
-            print("File index: ", files_index, " Use this this index in the config if you want to start from here next time")
+            print("File index: [" + str(files_index) + "/" + str(len(file_list)) + "] Use this this index in the config to start from this index input image")
             print("Next training image index: ", filtered_image_index['train'], " Use this in the config to make sure you don't write over existing data!")
             print("Next validation image index: ", filtered_image_index['val'], "Use this in the config to make sure you don't write over existing data!")
         # Quit pygame

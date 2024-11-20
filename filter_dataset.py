@@ -1,6 +1,5 @@
 from data_converters import YoloDatasetFilterer
 import argparse
-import yaml
 
 # Filter dataset keys:
 # ENTER: Save current boundingboxes and image and go to the next image
@@ -10,6 +9,12 @@ import yaml
 #           This bounding box will be saved when all boundingboxes are iterated or you press ENTER)
 # ARROW_DOWN: Remove this boundingbox and go to the next boundingbox in the image.
 #           This bounding box will not be saved when all boundingboxes are iterated or when you press ENTER)
+
+# Fileter dataset arguments:
+# Start_index: If you wnat to start somewhere in the middle of the dataset you can change this to whatever you want if not use 0
+# filter_start_train_index: If you don't want to override training images from a previous run use the index for the next image otherwise use 0
+# filter_start_val_index: If you don't want to override validation images from a previous run use the index for the next image otherwise use 0
+# You can find these values from the previous run printed in the terminal!!
 
 parser = argparse.ArgumentParser(description="image filtering argument parsers ")
 parser.add_argument("dataset_input_yaml", type=str, help="the location and name of the input yaml file in yolo format")
