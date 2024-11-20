@@ -1,7 +1,6 @@
 import cv2
 import os
 import numpy as np
-import yaml
 from data_converters import DataConverter
 
 class CapturedDataConverter(DataConverter.DataConverter):
@@ -22,6 +21,10 @@ class CapturedDataConverter(DataConverter.DataConverter):
         # We convert the image from BGR to RGB
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        # we pad the image with the max dilation kernel that we will use to make sure the boundingboxes reach the edge
+        max_dilation_kernel = max([int(x[1]) for x in self.class_color_info_map.values()])
+        padded_img = cv2.copyMakeBorder(img_rgb, max_dilation_kernel, max_dilation_kernel, max_dilation_kernel, max_dilation_kernel, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+
         # Loop through each segmented color that we are intrested in
         boundingboxes_per_class = dict()
         for label in self.class_color_info_map.keys():
@@ -29,23 +32,23 @@ class CapturedDataConverter(DataConverter.DataConverter):
             color = np.array(color)
 
             # Create a mask for the current color
-            mask = cv2.inRange(img_rgb, color, color)
+            mask = cv2.inRange(padded_img, color, color)
 
-            # To reduce the incontinuities in the mask we will perfomr a dilation
+            # To reduce the incontinuities in the mask we will perform a dilation
             kernel = np.ones((dilation_kernel_size, dilation_kernel_size), np.uint8)
             mask = cv2.dilate(mask, kernel, iterations=1)
 
             # Find contours for the masked region
             contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            # Filter the contours and add them to a list+ we also correct for the dilation that we did previously
+            # Filter the contours and add them to a list + we also correct for the dilation and the padding that we did previously
             boundingboxes = []
             for contour in contours:
                 x, y, w, h = cv2.boundingRect(contour)
-                x += int(dilation_kernel_size/2)
-                y += int(dilation_kernel_size/2)
-                w -= dilation_kernel_size
-                h -= dilation_kernel_size
+                x += int(dilation_kernel_size/2 - max_dilation_kernel)
+                y += int(dilation_kernel_size/2 - max_dilation_kernel)
+                w -= (dilation_kernel_size)
+                h -= (dilation_kernel_size)
                 
                 if w*h > min_area_boundingbox:
                     boundingboxes.append([x, y, w, h])
