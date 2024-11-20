@@ -55,10 +55,6 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
         with Image.open(image_file) as img:
             # Get image size
             width, height = img.size
-        
-        print(file_list[284])
-        print(file_list[285])
-        print(file_list[286])
 
         # We initialize pygame that we will use to show the images
         pygame.init()
@@ -94,7 +90,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
             # Depending on the amount of bounding boxes we perform a different while loop
             if len(bounding_boxes) != 0:
                 while loop and  i < len(bounding_boxes):
-                    # We draw the rectangles if there are any and update the screen
+                    # We draw the rectangles and update the screen
                     screen.blit(image, image.get_rect(center = screen.get_rect().center))
                     self.draw_ractangles(screen, bounding_boxes, i, width, height)
                     pygame.display.flip()
@@ -124,14 +120,12 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                         make_file = False
             else:
                 while loop:
-                    # We draw the rectangles if there are any and update the screen
+                    # We update the screen
                     pygame.display.flip()
 
                     # Based on the key that is pressed we add or remove the boundingbox
-                    print("Before get key press")
                     key_number = self.get_key_press()
-                    print("After get key press")
-                    time.sleep(0.1)
+
                     if key_number == 1:
                         loop = False
                         make_file = True
