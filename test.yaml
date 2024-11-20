@@ -1,0 +1,9 @@
+names:
+- car
+- motorcycle
+- truck
+- pedestrian
+- bus
+nc: 5
+train: test\images\train
+val: test\images\val

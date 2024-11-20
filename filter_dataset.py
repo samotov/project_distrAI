@@ -1,5 +1,6 @@
 from data_converters import YoloDatasetFilterer
 import argparse
+import yaml
 
 # Filter dataset keys:
 # ENTER: Save current boundingboxes and image and go to the next image
@@ -11,18 +12,21 @@ import argparse
 #           This bounding box will not be saved when all boundingboxes are iterated or when you press ENTER)
 
 parser = argparse.ArgumentParser(description="image filtering argument parsers ")
-parser.add_argument("dataset_input", type=str, help="the location of the input dataset in yolo format")
-parser.add_argument("dataset_ouput", type=str, help="the location of the ouput dataset in yolo format")
+parser.add_argument("dataset_input_yaml", type=str, help="the location and name of the input yaml file in yolo format")
+parser.add_argument("dest_dir", type=str, help="the name of the dataset folder of the output dataset and yaml file")
 parser.add_argument('start_index', type=int, help="the image index where we start")
+parser.add_argument('filter_start_train_index', type=int, help="the image index for the next train image")
+parser.add_argument('filter_start_val_index', type=int, help="the image index for the next validation image")
 
 args = parser.parse_args()
 
-source_dir = args.dataset_input
-dest_dir = args.dataset_ouput
+source_yaml_file = args.dataset_input_yaml
+dest_dir = args.dest_dir
 start_index = args.start_index
+filter_start_train_index = args.filter_start_train_index
+filter_start_val_index = args.filter_start_val_index
 
-dataset_filterer = YoloDatasetFilterer.YoloDatasetFilterer(source_dir, dest_dir, ['car', 'motorcycle', 'truck', 'pedestrian', 'bus'])
-image_size = (960, 540)
-dataset_filterer.filter_data(start_index, image_size)
+dataset_filterer = YoloDatasetFilterer.YoloDatasetFilterer(source_yaml_file, dest_dir)
+dataset_filterer.filter_data(start_index, filter_start_train_index, filter_start_val_index)
 
 print("Finished processing all images.")

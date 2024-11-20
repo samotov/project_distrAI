@@ -2,12 +2,18 @@ import os
 import shutil
 import pygame
 import time
+import yaml
+from PIL import Image
 from data_converters import DataConverter
 
 class YoloDatasetFilterer(DataConverter.DataConverter):
-    def __init__(self, input_dir, output_dir, classes):
-        super().__init__(input_dir, output_dir, classes)
+    def __init__(self, source_yaml_file, output_dir):
+        with open(source_yaml_file, 'r') as file:
+            dataset_input_config = yaml.safe_load(file)
         
+        super().__init__(output_dir, dataset_input_config['names'])
+        
+        self.input_dir = dataset_input_config['train'].partition('\\')[0]
         self.create_yaml_file()
         self.create_data_folders()
 
@@ -27,60 +33,76 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
             else:
                 pygame.draw.rect(screen, (255, 0, 0), (x, y, w, h), 3)
 
-    def filter_data(self, start_index, estimated_image_size):
-        # We initialize pygame that we will use to show the images
-        pygame.init()
-        width, height = estimated_image_size
-        screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption('Image filterer')
+    def filter_data(self, start_index_org_data, filter_image_index_train, filter_image_index_val):
+        # We initialize the indexes for the next validation and training image
+        filtered_image_index = {'train': filter_image_index_train, 'val': filter_image_index_val}
 
-        filtered_image_index = {'train': 0, 'val': 0}
+        # We get a big list of all the files
+        file_list = []
         for mode in ['train', 'val']:
             # We define the data folders
             images_input_path = os.path.join('datasets', self.input_dir, 'images', mode)
             labels_input_path = os.path.join('datasets', self.input_dir, 'labels', mode)
-            images_output_path = os.path.join('datasets', self.output_dir, 'images', mode)
-            labels_output_path = os.path.join('datasets', self.output_dir, 'labels', mode)
 
-            # We get the file names and pair them correspondingly of data samples
+            # We get the file names and pair them with the corresponding data samples and add wether its a validation or training image
             # We assume that the image and corresponding file have the same name and will be ordered in the same way
             image_files = [f for f in os.listdir(images_input_path) if f.endswith(('.jpg', '.png', '.jpeg'))]
             label_files = [f for f in os.listdir(labels_input_path) if f.endswith(('.txt'))]
-            file_list = [(image_files[file_index] ,label_files[file_index]) for file_index in range(len(image_files))]
+            file_list += [(image_files[file_index] ,label_files[file_index], mode) for file_index in range(len(image_files))]
 
-            # We loop over all the files and order them
-            files_index = start_index
-            while files_index < len(file_list):
-                image_file, label_file = file_list[files_index]
-                # We define the specific data folders
-                image_input_path = os.path.join(images_input_path, image_file)
-                label_input_path = os.path.join(labels_input_path, label_file)
-                image_output_path = os.path.join(images_output_path, str(filtered_image_index[mode]) + '.png')
-                label_output_path = os.path.join(labels_output_path, str(filtered_image_index[mode]) + '.txt')
+        # We get the image size of the first image and assume that they are all the same
+        image_file = os.path.join('datasets', self.input_dir, 'images', file_list[0][2], file_list[0][0])
+        with Image.open(image_file) as img:
+            # Get image size
+            width, height = img.size
+        
+        print(file_list[284])
+        print(file_list[285])
+        print(file_list[286])
 
-                # We load and draw the image on the screen
-                image = pygame.image.load(image_input_path) 
-                image = pygame.transform.scale(image, (width, height))
-                screen.blit(image, image.get_rect(center = screen.get_rect().center))
+        # We initialize pygame that we will use to show the images
+        pygame.init()
+        screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption('Image filterer')
 
-                # Get the bounding boxes in the file
-                bounding_boxes = self.get_bounding_boxes(label_input_path)
+        # We loop over all the files and order them
+        files_index = start_index_org_data
+        while files_index < len(file_list):
+            image_file, label_file, mode = file_list[files_index]
+            # We define the specific data folders
+            image_input_path = os.path.join('datasets', self.input_dir, 'images', mode, image_file)
+            label_input_path = os.path.join('datasets', self.input_dir, 'labels', mode, label_file)
+            image_output_path = os.path.join('datasets', self.output_dir, 'images', mode, str(filtered_image_index[mode]) + '.png')
+            label_output_path = os.path.join('datasets', self.output_dir, 'labels', mode, str(filtered_image_index[mode]) + '.txt')
 
-                # We define the file_index_difference to be 1 (this can be changed to move forward or backwards)
-                file_index_difference = 1
+            # We load and draw the image on the screen
+            image = pygame.image.load(image_input_path) 
+            image = pygame.transform.scale(image, (width, height))
+            screen.blit(image, image.get_rect(center = screen.get_rect().center))
 
-                # We loop over each rectangle to be able to remove or keep it
-                i = 0
-                loop = True
-                make_file = False
+            # Get the bounding boxes in the file
+            bounding_boxes = self.get_bounding_boxes(label_input_path)
+
+            # We define the file_index_difference to be 1 (this can be changed to move forward or backwards)
+            file_index_difference = 1
+
+            # We loop over each rectangle to be able to remove or keep it
+            i = 0
+            loop = True
+            make_file = False
+
+            # Depending on the amount of bounding boxes we perform a different while loop
+            if len(bounding_boxes) != 0:
                 while loop and  i < len(bounding_boxes):
-                    # We draw the rectangles and update the screen
+                    # We draw the rectangles if there are any and update the screen
                     screen.blit(image, image.get_rect(center = screen.get_rect().center))
                     self.draw_ractangles(screen, bounding_boxes, i, width, height)
                     pygame.display.flip()
 
                     # Based on the key that is pressed we add or remove the boundingbox
+                    print("Before get key press")
                     key_number = self.get_key_press()
+                    print("After get key press")
                     time.sleep(0.1)
                     if key_number == 1:
                         loop = False
@@ -100,24 +122,49 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                         filtered_image_index[mode] = max(filtered_image_index[mode] - 1, 0)
                         loop = False
                         make_file = False
-                
-                # If make_file is true we copy the image and craete the correct label file in the output directory
-                if make_file:
-                    shutil.copy(image_input_path, image_output_path)
-                    with open(label_output_path, "w") as file:
-                        for class_number, coordinates in bounding_boxes:
-                            x_center, y_center, w, h = coordinates
+            else:
+                while loop:
+                    # We draw the rectangles if there are any and update the screen
+                    pygame.display.flip()
 
-                            bbox_string = str(class_number) + ' ' + str(x_center) + ' ' + str(y_center) + ' ' + str(w) + ' ' + str(h) + '\n'
-                            file.write(bbox_string)
-                
-                    print('Moved '+ image_input_path + ' to ' + image_output_path)
-                    print('Created label file at ' + label_output_path)
-                    filtered_image_index[mode] += 1
-                # We update the files index
-                files_index += file_index_difference
-                print("File index: ", files_index)
+                    # Based on the key that is pressed we add or remove the boundingbox
+                    print("Before get key press")
+                    key_number = self.get_key_press()
+                    print("After get key press")
+                    time.sleep(0.1)
+                    if key_number == 1:
+                        loop = False
+                        make_file = True
+                    elif key_number == 2:
+                        loop = False
+                        make_file = False
+                    elif key_number == 5:
+                        # We go to the previous file
+                        file_index_difference = -1
+                        filtered_image_index[mode] = max(filtered_image_index[mode] - 1, 0)
+                        loop = False
+                        make_file = False
+            
+            # If make_file is true we copy the image and craete the correct label file in the output directory
+            if make_file:
+                shutil.copy(image_input_path, image_output_path)
+                with open(label_output_path, "w") as file:
+                    for class_number, coordinates in bounding_boxes:
+                        x_center, y_center, w, h = coordinates
 
+                        bbox_string = str(class_number) + ' ' + str(x_center) + ' ' + str(y_center) + ' ' + str(w) + ' ' + str(h) + '\n'
+                        file.write(bbox_string)
+                
+                print('Copied '+ image_input_path + ' to ' + image_output_path)
+                print('Created label file at ' + label_output_path)
+                filtered_image_index[mode] += 1
+            # We update the files index
+            files_index += file_index_difference
+
+            # We print some debug information
+            print("File index: ", files_index, " Use this this index in the config if you want to start from here next time")
+            print("Next training image index: ", filtered_image_index['train'], " Use this in the config to make sure you don't write over existing data!")
+            print("Next validation image index: ", filtered_image_index['val'], "Use this in the config to make sure you don't write over existing data!")
         # Quit pygame
         pygame.quit()
     

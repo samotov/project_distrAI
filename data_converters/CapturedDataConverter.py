@@ -8,6 +8,10 @@ class CapturedDataConverter(DataConverter.DataConverter):
     def __init__(self, input_dir, output_dir, classes, class_color_info_map):
         super().__init__(input_dir, output_dir, classes)
         self.class_color_info_map = class_color_info_map
+        
+        # We create our folders and our .yaml file
+        self.create_data_folders()
+        self.create_yaml_file()
 
 
     def get_2D_bounding_box_from_segmeted_image(self, segmented_image_path):
@@ -55,10 +59,6 @@ class CapturedDataConverter(DataConverter.DataConverter):
 
         # We keep track of this index to make sure that we know what the last index of the image was that we added.
         current_index = first_index
-
-        # We create our folders and our .yaml file
-        self.create_data_folders()
-        self.create_yaml_file()
 
         # We define our segmented images and normal images foldes
         seg_folder = os.path.join(self.input_dir, 'segmentation_image')

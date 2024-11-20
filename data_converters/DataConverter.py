@@ -2,18 +2,17 @@ import os
 import yaml
 
 class DataConverter:
-    def __init__(self, input_dir, output_dir, classes):
+    def __init__(self, output_dir, classes):
         self.output_dir = output_dir
-        self.input_dir = input_dir
         self.classes = classes
 
     def create_data_folders(self):
         # We define the subfolder structure
         folders = [
-            'images/train',
-            'images/val',
-            'labels/train',
-            'labels/val']
+            'images\\train',
+            'images\\val',
+            'labels\\train',
+            'labels\\val']
 
         # We loop through each folder and create it
         for folder in folders:
@@ -32,8 +31,8 @@ class DataConverter:
         # We define the content for the YAML file
 
         data = {
-            'train': os.path.join(self.output_dir, "images", "train"),    # Path to the training data
-            'val': os.path.join(self.output_dir, "images", "val"),        # Path to the validation data
+            'train': self.output_dir + "\\images\\train",    # Path to the training data
+            'val': self.output_dir + "\\images\\val",        # Path to the validation data
             'nc': len(self.classes),        # Number of classes
             'names': list(self.classes)     # List of class names
         }
