@@ -4,6 +4,11 @@ names:
 - truck
 - pedestrian
 - bus
-nc: 5
+- traffic signs
+- traffic light green
+- traffic light orange
+- traffic light red
+- traffic light unimportant
+nc: 10
 train: test\images\train
 val: test\images\val

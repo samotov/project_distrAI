@@ -6,8 +6,9 @@ from data_converters import DataConverter
 
 class CapturedDataConverter(DataConverter.DataConverter):
     def __init__(self, input_dir, output_dir, classes, class_color_info_map):
-        super().__init__(input_dir, output_dir, classes)
+        super().__init__(output_dir, classes)
         self.class_color_info_map = class_color_info_map
+        self.input_dir = input_dir
         
         # We create our folders and our .yaml file
         self.create_data_folders()
@@ -148,7 +149,7 @@ class CapturedDataConverter(DataConverter.DataConverter):
         # Optionally save the modified image
         cv2.imwrite('output_image.jpg', image)
 
-    def create_data_folders(self):
+    """def create_data_folders(self):
         # We define the subfolder structure
         folders = [
             'images/train',
@@ -182,4 +183,4 @@ class CapturedDataConverter(DataConverter.DataConverter):
         # We write the data to the YAML file
         with open(yaml_path, 'w') as file:
             yaml.dump(data, file)
-        print(f"YAML file created: {yaml_path}")
+        print(f"YAML file created: {yaml_path}")"""

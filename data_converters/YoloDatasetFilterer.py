@@ -121,6 +121,30 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                         filtered_image_index[mode] = max(filtered_image_index[mode] - 1, 0)
                         loop = False
                         make_file = False
+                    elif key_number == 6:
+                        # We change the boundingbox label to traffic light green
+                        bounding_boxes[i] = (self.classes.index("traffic light green"), bounding_boxes[i][1])
+                        i += 1
+                        loop = True
+                        make_file = True
+                    elif key_number == 7:
+                        # We change the boundingbox label to traffic light orange
+                        bounding_boxes[i] = (self.classes.index("traffic light orange"), bounding_boxes[i][1])
+                        i += 1
+                        loop = True
+                        make_file = True
+                    elif key_number == 8:
+                        # We change the boundingbox label to traffic light red
+                        bounding_boxes[i] = (self.classes.index("traffic light red"), bounding_boxes[i][1])
+                        i += 1
+                        loop = True
+                        make_file = True
+                    elif key_number == 9:
+                        # We change the boundingbox label to traffic light unimportant
+                        bounding_boxes[i] = (self.classes.index("traffic light unimportant"), bounding_boxes[i][1])
+                        i += 1
+                        loop = True
+                        make_file = True
             else:
                 while loop:
                     # We update the screen
@@ -202,4 +226,15 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
                     if event.key == pygame.K_LEFT:
                         scanning = False
                         return 5
-                
+                    if event.key == pygame.K_g:
+                        scanning = False
+                        return 6
+                    if event.key == pygame.K_o:
+                        scanning = False
+                        return 7
+                    if event.key == pygame.K_r:
+                        scanning = False
+                        return 8
+                    if event.key == pygame.K_u:
+                        scanning = False
+                        return 9

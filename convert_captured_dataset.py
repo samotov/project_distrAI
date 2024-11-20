@@ -9,11 +9,12 @@ def convert_data(input_dataset, output_dataset, last_index):
                 'truck': [np.array([0, 0, 70]), 20, 400],
                 'pedestrian': [np.array([220, 20, 60]), 5, 200],
                 'bus': [np.array([0, 60, 100]), 20, 400],
-                #'traffic signs': [np.array([220, 220, 0]), 1, 150],
-                #'traffic lights': [np.array([250, 170, 30]), 1, 150]
+                'traffic signs': [np.array([220, 220, 0]), 1, 150],
+                'traffic light': [np.array([250, 170, 30]), 1, 60]
                 }
     
-    data_converter = CapturedDataConverter.CapturedDataConverter(input_dataset, output_dataset, class_color_info_map.keys(), class_color_info_map)
+    classes = ['car', 'motorcycle', 'truck', 'pedestrian', 'bus', 'traffic signs', 'traffic light green', 'traffic light orange', 'traffic light red', 'traffic light unimportant']
+    data_converter = CapturedDataConverter.CapturedDataConverter(input_dataset, output_dataset, classes, class_color_info_map)
 
     next_index = data_converter.convert_data(last_index, 0.8)
     print('If you want to convert more images in the same folder use a next index of ' + str(next_index) + ' to make sure no images get overwritten.')

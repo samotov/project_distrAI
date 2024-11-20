@@ -6,8 +6,9 @@ import progressbar
 
 class KittiDataConverter(DataConverter.DataConverter):
     def __init__(self, input_dir, output_dir, classes, dataset):
-        super().__init__(input_dir, output_dir, classes)
+        super().__init__(output_dir, classes)
         self.dataset = dataset
+        self.input_dir = input_dir
 
     def convert_data(self, training_percentage):
         # We create the needed files and folders

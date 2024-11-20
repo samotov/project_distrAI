@@ -9,6 +9,11 @@ import argparse
 #           This bounding box will be saved when all boundingboxes are iterated or you press ENTER)
 # ARROW_DOWN: Remove this boundingbox and go to the next boundingbox in the image.
 #           This bounding box will not be saved when all boundingboxes are iterated or when you press ENTER)
+# R_KEY: Change the class to traffic_light_red and move to the next boundingbox
+# O_KEY: Change the class to traffic_light_orange and move to the next boundingbox
+# G_KEY: Change the class to traffic_light_green and move to the next boundingbox
+# U_KEY: Change the class to traffic_light_unimportant and move to the next boundingbox
+
 
 # Fileter dataset arguments:
 # Start_index: If you wnat to start somewhere in the middle of the dataset you can change this to whatever you want if not use 0
