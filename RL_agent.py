@@ -1,14 +1,21 @@
-import gym
+import os
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import VecNormalize
+from simple_environment import SpeedAdjustmentEnv
 
-# Example: Custom mock environment
-from simple_environment import MockEnvironment  # Use your own environment
+import torch
 
 
-# Step 1: Create the environment
-env = MockEnvironment()
-env = DummyVecEnv([lambda: env])  # Vectorize the environment (for compatibility)
+print(torch.cuda.is_available())  # Should return True if GPU is available
+
+
+# Set environment variable to avoid OpenMP issues
+# os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+# Create the vectorized environment
+env = make_vec_env(lambda: SpeedAdjustmentEnv(render_mode="human"), n_envs=1)  # Use lambda to initialize the env
+env = VecNormalize(env, norm_reward=False)
 
 # Step 2: Initialize the PPO model
 model = PPO("MlpPolicy", env, verbose=1)
@@ -16,22 +23,11 @@ model = PPO("MlpPolicy", env, verbose=1)
 # Step 3: Train the model
 model.learn(total_timesteps=10000)
 
-# Step 4: Save and load the model
-model.save("ppo_mock_env")
-loaded_model = PPO.load("ppo_mock_env")
+# Save the model after training
+model.save("ppo_speed_adjustment")
 
-# Step 5: Evaluate the model
-state = env.reset()
-for _ in range(100):
-    action, _ = loaded_model.predict(state)
-    state, reward, done, _ = env.step(action)
-    env.render()
-    if done:
-        state = env.reset()
-
-env.close()
-
-
+# Optionally, you can load and test the trained model after saving
+# loaded_model = PPO.load("ppo_speed_adjustment")
 
 
 

@@ -1,92 +1,83 @@
-import gymnasium as gym
-from gym import spaces
 import numpy as np
+import random
+import gymnasium as gym
+from gym.spaces import Box
+from reward_calculation import calculate_reward
 
-class MockEnvironment(gym.Env):
-    """
-    A simple mock environment for PPO testing.
-    """
+class SpeedAdjustmentEnv(gym.Env):
+    def __init__(self, render_mode="human"):
+        super(SpeedAdjustmentEnv, self).__init__()
 
-    def __init__(self):
-        super(MockEnvironment, self).__init__()
+        # Lower -and higher bounds for the speed
+        self.LOW_BOUND = 0.0
+        self.HIGH_BOUND = 100.0
 
-        # Define the action space: Discrete actions (e.g., 0: move left, 1: move right)
-        self.action_space = spaces.Discrete(3)  # Three possible actions: [0, 1, 2]
+        # self.STEERING_ANGLE  =
+        # self.VELOCITY
+        #self.STOPPING_DISTANCE =
 
-        # Define the observation space: Continuous state representation
-        self.observation_space = spaces.Box(
-            low=np.array([0, 0]),  # Min values for state features
-            high=np.array([1, 1]),  # Max values for state features
-            dtype=np.float32
-        )
 
-        # Initialize the state
-        self.state = np.zeros(2)
+        # Action space: Continuous space representing the car's speed
+        self.action_space = gym.spaces.Box(low=self.LOW_BOUND, high=self.HIGH_BOUND, shape=(1,), dtype=np.float32)
+
+        # Observation space: Example of a state with target speed and current speed
+        self.observation_space = gym.spaces.Box(low=0.0, high=100.0, shape=(2,), dtype=np.float32)
+
+        # Initial state
+        self.current_speed = 0.0
+        self.target_speed = 30.0  # Example target speed
+
+        self.max_steps = 50  # Maximum steps per episode
         self.step_count = 0
-        self.max_steps = 50  # Maximum steps before the environment resets
 
-    def reset(self):
-        """
-        Reset the environment to the initial state.
-        Returns the initial state.
-        """
-        self.state = np.random.uniform(low=0, high=1, size=(2,))
+        # Store the render mode
+        self.render_mode = render_mode
+
+    def reset(self ,*, seed=None, return_info=False, options=None):
+        # Reset the environment to its initial state
+        self.current_speed = np.random.uniform(self.LOW_BOUND, self.HIGH_BOUND)
         self.step_count = 0
-        return self.state
+        return np.array([self.current_speed, self.target_speed], dtype=np.float32)
 
     def step(self, action):
-        """
-        Apply an action to the environment.
-        Returns the next state, reward, done, and info.
-        """
-        # Increment the step count
+        # Clip the action to ensure it's within the valid range
+        action = np.clip(action, self.LOW_BOUND, self.HIGH_BOUND)
+
+        # Apply the action to adjust the car's speed
+        self.current_speed += (action[0] - self.current_speed) * 0.1  # Smooth adjustment
+
+        # Calculate the reward based on the closeness to the target speed
+        speed_diff = abs(self.current_speed - self.target_speed)
+
+        # Calculate the total reward for this action
+        reward = calculate_reward(speed_diff)
+
+        # Define the done condition
         self.step_count += 1
 
-        # Update the state based on the action
-        if action == 0:  # Move left
-            self.state[0] = max(0, self.state[0] - 0.1)
-        elif action == 1:  # Move right
-            self.state[0] = min(1, self.state[0] + 0.1)
-        elif action == 2:  # Stay
-            self.state[1] = max(0, self.state[1] - 0.05)
+        terminated = self.step_count >= self.max_steps  # Episode termination condition
+        truncated = False  # No time limit for truncation in this environment
 
-        # Compute the reward (e.g., proximity to a target state)
-        target = np.array([0.5, 0.5])
-        reward = -np.linalg.norm(self.state - target)  # Negative distance to target
+        # Observation includes current speed and target speed
+        obs = np.array([self.current_speed, self.target_speed], dtype=np.float32)
 
-        # Check if the episode is done
-        done = self.step_count >= self.max_steps
+        # Returning 5 values: observation, reward, terminated, truncated, and info
+        info = {}  # Optional additional info
 
-        # Optional debug info
-        info = {"step_count": self.step_count}
+        return obs, reward, terminated, truncated, info
 
-        return self.state, reward, done, info
 
     def render(self, mode="human"):
-        """
-        Render the environment. For now, just print the state.
-        """
-        print(f"State: {self.state}")
+        if self.render_mode == "human":
+            print(
+                f"Step: {self.step_count}, Current Speed: {self.current_speed:.2f}, Target Speed: {self.target_speed:.2f}")
+
+    def seed(self, seed=None):
+        # Set the seed for random number generation
+        self.np_random = np.random.default_rng(seed)
+        return [seed]
 
     def close(self):
-        """
-        Clean up resources.
-        """
         pass
 
 
-# Example usage
-if __name__ == "__main__":
-    env = MockEnvironment()
-
-    state = env.reset()
-    print("Initial State:", state)
-
-    for _ in range(100):
-        action = env.action_space.sample()  # Random action
-        next_state, reward, done, info = env.step(action)
-        print(f"Action: {action}, State: {next_state}, Reward: {reward}, Done: {done}")
-        if done:
-            break
-
-    env.close()
