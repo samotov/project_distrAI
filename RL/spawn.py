@@ -148,7 +148,7 @@ class Spawn:
             self.all_actors[i].set_max_speed(float(walker_speed[int(i/2)]))
 
 
-    def reomve_all_entities(self):
+    def remove_all_entities(self):
         self.client.apply_batch([carla.command.DestroyActor(x) for x in self.vehicles_list])
         for i in range(0, len(self.all_id), 2):
             self.all_actors[i].stop()

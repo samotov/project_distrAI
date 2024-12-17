@@ -4,12 +4,14 @@ import progressbar
 
 # Information about the dataset https://medium.com/@abdulhaq.ah/explain-label-file-of-kitti-dataset-738528de36f4
 
+# Data converter class for the Kitti dataset inhereting from the DataConverter class
 class KittiDataConverter(DataConverter.DataConverter):
     def __init__(self, input_dir, output_dir, classes, dataset):
         super().__init__(output_dir, classes)
         self.dataset = dataset
         self.input_dir = input_dir
 
+    # Convert the data from the kitti dataset into the YOLO format with a specific training percentage
     def convert_data(self, training_percentage):
         # We create the needed files and folders
         self.create_yaml_file()
@@ -84,6 +86,7 @@ class KittiDataConverter(DataConverter.DataConverter):
             bar.update(image_index + 1)
         bar.finish()
 
+    # Create 2 extra folders that contain 3D information
     def create_data_folders_kitti(self):
         # We create the original folders and also create folders for the 3D information for later
         self.create_data_folders()
