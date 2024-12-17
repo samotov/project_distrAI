@@ -1,10 +1,11 @@
 # Folders
-object_localization/models/object_localization_weights
-object_localization/models/regression_weights
-object_localization/datasets
-object_localization/wandb
-object_localization/runs
-object_localization/.vscode
+computer_vision/models/object_localization_weights
+computer_vision/models/regression_weights
+computer_vision/datasets
+computer_vision/wandb
+computer_vision/runs
+computer_vision/.vscode
+computer_vision/yolov8s.pt
 RL/models/object_localization_weights
 RL/results
 
