@@ -10,5 +10,5 @@ names:
 - traffic light red
 - traffic light unimportant
 nc: 10
-train: test\images\train
-val: test\images\val
+train: filtered_full_dataset/images/train
+val: filtered_full_dataset/images/val

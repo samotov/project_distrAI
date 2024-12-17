@@ -55,7 +55,7 @@ class ObjectLocalizationModel:
         ax = fig.add_subplot(1, 1, 1)
         ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         plt.show(block = False)
-        plt.pause(2)
+        plt.pause(1)
         plt.close()
     
     def visualize_data(self, amount, data_path):
