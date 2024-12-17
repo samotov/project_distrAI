@@ -1,13 +1,12 @@
 # Folders
 object_localization/models/object_localization_weights
 object_localization/models/regression_weights
-object_localization/models/__pycache__
 object_localization/datasets
 object_localization/wandb
 object_localization/runs
-object_localization/__pycache__
 object_localization/.vscode
-object_localization/gym_rl
+RL/models/object_localization_weights
+RL/results
 
 # Files
 object_localization/yolov8s.pt
