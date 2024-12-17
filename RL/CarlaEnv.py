@@ -8,6 +8,7 @@ import pygame
 import torch
 import sys
 import glob
+import math
 import numpy as np
 
 
@@ -15,6 +16,7 @@ from spawn import Spawn
 from depth_conversion import to_bgra_array, depth_to_array
 from models import ObjectLocalizationModel
 from agents.basic_agent import BasicAgent
+from collections import deque
 
 # System stuff
 try:
@@ -37,7 +39,7 @@ VIEW_WIDTH = 1920 // 2
 VIEW_HEIGHT = 1080 // 2
 VIEW_FOV = 90
 Y_BOUND = 1 # 1 * 2 = 2: width in which we look for the lead vehicle 
-MAX_SIMULATION_LENGTH = 300
+MAX_SIMULATION_LENGTH = 1000
 max_distance = 1000
 SENSOR_TICK = 0.03  # Sensor tick time in seconds
 BB_COLOR = (248, 64, 24)
@@ -77,7 +79,7 @@ class CarlaEnv(gym.Env):
         self.ego_speed = 0
         self.target_speed = 0
         self.distance_to_lead =  100
-        self.reward = 0
+        self.target_speed_based_on_distance = 0
         self.throttle = 0
         self.brake = 0
 
@@ -117,8 +119,21 @@ class CarlaEnv(gym.Env):
        
         self.loop_state = False
         self.class_names = ["Car", "Motorcycle", "truck","Pedestrian","Bus","Stop sign","Green","Orange","Red", "Not important"]
+        
+        # Initialize a deque to store the last 10 steering angles
+        self.steering_angle_history = deque(maxlen=10)
+        self.timestamp_history = deque(maxlen=10)
+        
+        # Initial top bound positions for the perspective effect
+        self.top_left_offset = -50
+        self.top_right_offset = 50
+        
+        self.left_motion_tube_points = []
+        self.right_motion_tube_points = []
+        
+        self.lead_car = None
+        
 
-    # Get the blueprints for the RGB camera based on a filter
     def camera_blueprint(self, filter):
         """
         Returns camera blueprint.
@@ -130,7 +145,7 @@ class CarlaEnv(gym.Env):
         camera_bp.set_attribute('sensor_tick', str(SENSOR_TICK))  # Time interval for sensor updates
         return camera_bp
 
-    # Get the blueprints for the depth camera based on a filter
+
     def depth_blueprint(self, filter):
 
         """
@@ -147,7 +162,6 @@ class CarlaEnv(gym.Env):
 
         return depth_bp
 
-    # Change the synchronous mode of the world (True or Flase)
     def set_synchronous_mode(self, synchronous_mode):
         """
         Sets synchronous mode.
@@ -157,7 +171,6 @@ class CarlaEnv(gym.Env):
         settings.synchronous_mode = synchronous_mode
         self.world.apply_settings(settings)
 
-    # Setup the actor car vehicle that will be use in the environment
     def setup_car(self):
         """
         Spawns actor-vehicle to be controled.
@@ -166,13 +179,18 @@ class CarlaEnv(gym.Env):
         car_bp = self.world.get_blueprint_library().filter('vehicle.*')[0]
         location = random.choice(self.world.get_map().get_spawn_points())
         self.car = self.world.try_spawn_actor(car_bp, location)
-        while self.car == None:     # Try to spawn again if the spawn failed because of a collision
+        while self.car == None:
             print("Could not spawn car because of collision, trying again somehere else!")
             location = random.choice(self.world.get_map().get_spawn_points())
             self.car = self.world.try_spawn_actor(car_bp, location)
-                
-    # Setup the collision sensor
-    def setup_collision_sensor(self):
+        
+        # Spawn lead vehicle
+        lead_car_bp = self.world.get_blueprint_library().filter('vehicle.*')[0]
+        forward_dir = self.car.get_transform().get_forward_vector() * 10
+        location.location += carla.Location(forward_dir.x, forward_dir.y, forward_dir.z)
+        self.lead_car = self.world.try_spawn_actor(lead_car_bp, location)
+
+    def setup_collision_sensor(self):  #####
         """
         Sets up collision sensor.
         """
@@ -181,7 +199,6 @@ class CarlaEnv(gym.Env):
         weak_self = weakref.ref(self)
         self.collision_sensor.listen(lambda event: self._on_collision(event))
 
-    # Setup the lane invasion sensor
     def setup_lane_invasion_sensor(self):  #####
         """
         Sets up lane invasion sensor.
@@ -191,14 +208,12 @@ class CarlaEnv(gym.Env):
         weak_self = weakref.ref(self)
         self.lane_invasion_sensor.listen(lambda event: self._on_lane_invasion(event))
 
-    # Function that will be called when a collision is detected
     def _on_collision(self, event):  #####
         """
         Collision event handler.
         """
         self.collision_hist.append(event)
 
-    # Function that will be called when a lane invasion happens
     def _on_lane_invasion(self, event):  #####
         """
         Lane invasion event handler.
@@ -328,26 +343,18 @@ class CarlaEnv(gym.Env):
             array = array[:, :, ::-1]
             surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
             self.display.blit(surface, (0, 0))
-            
-    def render_bounding_boxes(self, display, results, depth_image):
+
+    def render_bounding_boxes(self):
         """
         Renders bounding boxes and their associated depth information on the display.
         """
 
         # Extract bounding box coordinates and labels
-        bbox_array = results[0].boxes.xyxy.to('cpu').numpy()  # (N, 4) array of bounding box coordinates
-        labels = results[0].boxes.cls.to('cpu').numpy()  # (N,) array of class labels
-
-        # Extract the BGRA image and convert it to a grayscale depth map
-        #bgra_image_array = np.array(depth_image.raw_data, dtype=np.uint8).reshape((VIEW_HEIGHT, VIEW_WIDTH, 4))[:, :, :3]
-        bgra_image_array = to_bgra_array(depth_image)
-        grayscale_image = depth_to_array(bgra_image_array)
+        bbox_array = self.results[0].boxes.xyxy.to('cpu').numpy()  # (N, 4) array of bounding box coordinates
+        labels = self.results[0].boxes.cls.to('cpu').numpy()  # (N,) array of class labels
 
         # Prepare a font for drawing text
         font = pygame.font.Font(None, 16)
-
-        # Initialize a list for output data
-        data = []
 
         # Loop over bounding boxes and process each one
         for i, bbox in enumerate(bbox_array):
@@ -358,26 +365,25 @@ class CarlaEnv(gym.Env):
             
             x, y, depth, angle = self.get_depth_information(bbox)
 
-            data.append({"label": label, "distance": depth})
+            if self.bbox_is_within_tubes(bbox):
+                color = (0, 0, 255)
+            else:
+                color = (255, 0, 0)
 
             # Draw bounding box on the display
-            pygame.draw.rect(display, (0, 255, 255), pygame.Rect(x_min, y_min, x_max - x_min, y_max - y_min), 2)
+            pygame.draw.rect(self.display, color, pygame.Rect(x_min, y_min, x_max - x_min, y_max - y_min), 2)
             
             # Render the text with a black frame (slightly offset for the shadow effect)
             shadow_surface = font.render(f"{class_name}, {x:.2f}m, {y:.2f}m, {depth:.2f}m, {angle:.2f}°", True, (0, 0, 0))
-            display.blit(shadow_surface, (x_min - 1, y_min - 21))  # Slight offset for shadow
-            display.blit(shadow_surface, (x_min + 1, y_min - 19))  # Slight offset for shadow
-            display.blit(shadow_surface, (x_min, y_min - 20))      # Center for thicker effect
+            self.display.blit(shadow_surface, (x_min - 1, y_min - 21))  # Slight offset for shadow
+            self.display.blit(shadow_surface, (x_min + 1, y_min - 19))  # Slight offset for shadow
+            self.display.blit(shadow_surface, (x_min, y_min - 20))      # Center for thicker effect
 
             # Display label and distance
             label_surface = font.render(f"{class_name}, {x:.2f}m, {y:.2f}m, {depth:.2f}m, {angle:.2f}°", True, (255, 255, 255))
-            display.blit(label_surface, (x_min, y_min - 20))
-
-        return data
+            self.display.blit(label_surface, (x_min, y_min - 20))
     
-    # Render the RL informatio in the data_dict to the top left of the screen
     def render_RL_information(self):
-        # Prepare the data_dict dictionaty
         data_dict = dict()
         
         data_dict["speed"] = round(self.ego_speed, 2)
@@ -385,14 +391,14 @@ class CarlaEnv(gym.Env):
         data_dict["distance to lead"] = round(self.distance_to_lead, 2)
         data_dict["reward"] = round(self.reward, 2)
         data_dict["actions"] = [round(self.throttle, 2), round(self.brake, 2)]
-        
-        # Initialize the font
+        data_dict["breaking distance speed"] = round(self.target_speed_based_on_distance, 2)
+
+
         font = pygame.font.Font(None, 16)
 
         label_surface = font.render("RL data: ", True, TEXT_COLOR)
         self.display.blit(label_surface, (0, 10))
 
-        # Draw each key and value pair on the top lef of the screen while incrementing the y position by 10
         position = 20
         
         for key in data_dict.keys():
@@ -400,9 +406,87 @@ class CarlaEnv(gym.Env):
             label_surface = font.render(data_string, True, TEXT_COLOR)
             self.display.blit(label_surface, (0, position))
             position += 10
+            
+    def generate_curve_points(self, start, control, end, num_points=50):
+        """
+        Generate points along a quadratic Bezier curve.
+        :param start: Tuple (x, y) for the start point
+        :param control: Tuple (x, y) for the control point
+        :param end: Tuple (x, y) for the end point
+        :param num_points: Number of points to generate along the curve
+        :return: List of (x, y) points
+        """
+        t_values = np.linspace(0, 1, num_points)
+        points = [
+            (
+                (1 - t) ** 2 * start[0] + 2 * (1 - t) * t * control[0] + t ** 2 * end[0],
+                (1 - t) ** 2 * start[1] + 2 * (1 - t) * t * control[1] + t ** 2 * end[1],
+            )
+            for t in t_values
+        ]
+        return points
+                    
+            
+    def draw_motion_tube(self):
+        # Get the current steering angle
+        current_steering_angle = self.car.get_control().steer  # Value between -1.0 (left) and 1.0 (right)
+
+        # Add the current steering angle to the history
+        self.steering_angle_history.append(current_steering_angle)
+
+        # Compute the average steering angle over the last 10 frames
+        if len(self.steering_angle_history) > 20:
+            self.steering_angle_history.pop(0)
+        avg_steering_angle = sum(self.steering_angle_history) / len(self.steering_angle_history)
+
+        # Define maximum lateral bound
+        max_y_bound = 2.0  # Maximum lateral deviation in meters when steering is extreme
+        y_bound = max_y_bound * avg_steering_angle  # Scale bound based on averaged steering
+
+        # Calculate pixel-based bounds
+        middle_x = VIEW_WIDTH // 2
+        pixel_y_bound = int((y_bound / max_y_bound) * (VIEW_WIDTH // 2))
+
+        # Define key points for the straight baseline curve
+        bottom_y = VIEW_HEIGHT
+        top_y = VIEW_HEIGHT // 2
+        middle_y = (bottom_y + top_y) // 2
+
+        # Adjust control points based on steering direction
+        curve_width = 35  # Distance between left and right tube bounds
+        bottom_width = 300
+
+        # Define points for the left and right boundaries (start with straight lines)
+        start_left = (middle_x - curve_width - bottom_width, bottom_y)
+        start_right = (middle_x + curve_width + bottom_width, bottom_y)
+
+        # For straight path, we will keep control points aligned to create straight lines
+        control_left = (middle_x - curve_width, middle_y)
+        control_right = (middle_x + curve_width, middle_y)
+
+        # Adjust control points for steering to create a slight curve
+        if avg_steering_angle < 0:  # Left turn
+            control_left = (middle_x - curve_width + abs(pixel_y_bound), middle_y)
+            control_right = (middle_x + curve_width + abs(pixel_y_bound), middle_y)
+        elif avg_steering_angle > 0:  # Right turn
+            control_left = (middle_x - curve_width - abs(pixel_y_bound), middle_y)
+            control_right = (middle_x + curve_width - abs(pixel_y_bound), middle_y)
+
+        end_left = (middle_x - curve_width + pixel_y_bound, top_y)
+        end_right = (middle_x + curve_width + pixel_y_bound, top_y)
+
+        # Generate points along the curves for the left and right boundaries
+        self.left_motion_tube_points = self.generate_curve_points(start_left, control_left, end_left)
+        self.right_motion_tube_points = self.generate_curve_points(start_right, control_right, end_right)
+
+        # Draw the motion tube as curves
+        line_color = (0, 0, 255)  # Blue color for the bounds
+        for i in range(len(self.left_motion_tube_points) - 1):
+            pygame.draw.line(self.display, line_color, self.left_motion_tube_points[i], self.left_motion_tube_points[i + 1], 2)
+            pygame.draw.line(self.display, line_color, self.right_motion_tube_points[i], self.right_motion_tube_points[i + 1], 2)
+
     # ------------------------------------ END: Display rendering methods-----------------------------------------------------------------
 
-    # get depth information of a boundingbox in the image (x_top_view, y_top_view, depth_in_meters, angle)
     def get_depth_information(self, bbox):
         x_min, y_min, x_max, y_max = bbox.astype(int)
 
@@ -440,18 +524,34 @@ class CarlaEnv(gym.Env):
 
         angle =  x_factor * FOV_constant
         
+        
+        # Position of the median point
         x_top_view = np.cos(angle * np.pi/180) * depth_in_meters
         y_top_view = np.sin(angle * np.pi/180) * depth_in_meters
 
         return [x_top_view, y_top_view, depth_in_meters, angle]
 
-    # Update the RL input data based on the new environment
+    def bbox_is_within_tubes(self, bbox):
+        # We loop over all the motion tube point pairs and check wether a part of the vehicles boundingbox is inside
+        x_min, y_min, x_max, y_max = bbox.astype(int)
+        is_within_bounds = False
+        for left_point, right_point in zip(self.left_motion_tube_points, self.right_motion_tube_points):
+            # Extract eh differnt x values and the y value (is the same)
+            x_value_left, y_value = left_point
+            x_value_right, _ = right_point
+            
+            if y_min < y_value < y_max:
+                if x_min < x_value_left < x_max or x_min < x_value_right < x_max:
+                    is_within_bounds = True
+                    break
+
+        return is_within_bounds
+    
     def update_RL_input_data(self):
         
         bbox_array = self.results[0].boxes.xyxy.to('cpu').numpy()  # (N, 4) array of bounding box coordinates
         labels = self.results[0].boxes.cls.to('cpu').numpy()
         # ["Car", "Motorcycle", "truck","Pedestrian","Bus","Stop sign","Green","Orange","Red", "Not important"]
-        
         # Find the closest vehicle, with a max value of 100
         closest_vehicle_distance_in_range = 100
         
@@ -461,18 +561,18 @@ class CarlaEnv(gym.Env):
             
             # for now, we only look at vehicles ...
             if label in [0, 1, 2, 4]:
-                
-                _, y, depth, _ = self.get_depth_information(bbox)
-                
-                if depth < closest_vehicle_distance_in_range and abs(y) < Y_BOUND :  # Update, if this vehicle is closer then the previous one and is withing the y-bounds!
-                    closest_vehicle_distance_in_range = depth # extract the depth to the lead vehicle so we can use it in the RL agent!
-        
+                 
+                _, _, depth, _ = self.get_depth_information(bbox)
+
+                if self.bbox_is_within_tubes(bbox) and depth < closest_vehicle_distance_in_range:
+                    closest_vehicle_distance_in_range = depth  # Update the closest vehicle distance if it's within bounds
+            
         # These 3 values are used for the step method!
         self.ego_speed = self.car.get_velocity().length() * 3.6
         self.target_speed = self.car.get_speed_limit()
         self.distance_to_lead = closest_vehicle_distance_in_range
 
-    # Destroy the car and sensors in the environment
+
     def destroy_car_and_sensors(self):
         # Destroy camera
         if self.camera != None:
@@ -492,23 +592,25 @@ class CarlaEnv(gym.Env):
 
         # Destroy car
         if self.car != None:
-            self.car.destroy()
+            self.car.destroy()   
+
+        if self.lead_car != None:
+            self.lead_car.destroy()    
+            
 
     # -------------------------------------------- START:Gym implementation ------------------------------------------------------------------
     
-    # Implement a seed for the environment based on seed
     def seed(self, seed=None):
         """Set the random seed for reproducibility."""
         self.np_random, _ = gym.utils.seeding.np_random(seed)
     
     
-    # Reset the environment
     def reset(self, **kwargs):
         
         """Reset the environment."""
         # Remove all the actors from the environment
         self.destroy_car_and_sensors()
-        self.spawn.reomve_all_entities()
+        self.spawn.remove_all_entities()
 
         # Update the seed
         seed = kwargs.get("seed", None)
@@ -521,6 +623,7 @@ class CarlaEnv(gym.Env):
 
         # Initialize the basic agent that will take of the route planning and the destination
         self.basic_agent = BasicAgent(self.car,  map_inst=self.map)
+        self.lead_basic_agent = BasicAgent(self.lead_car, map_inst=self.map)
         self.destination = random.choice(self.spawn_points).location
         self.basic_agent.set_destination(self.destination)        
 
@@ -533,53 +636,153 @@ class CarlaEnv(gym.Env):
         # Return the initial observation
         return np.array([self.ego_speed, self.target_speed, self.distance_to_lead]), {}
     
-    # Perform a step update in the environment based on an action
+    
     def step(self, action):
+        """
+        Execute a single step in the environment based on the given action.
 
-        # Update the destination if it has been reached
-        if self.basic_agent.done():
-            self.basic_agent.set_destination(random.choice(self.spawn_points).location)
+        Principles:
+        - Avoid directly controlling `steer`, `throttle`, and `brake` in the environment.
+        - Instead, use the action as the agent's command.
+
+        Parameters:
+        - action: The action provided by the agent.
+
+        Returns:
+        - obs: The current observation.
+        - reward: The calculated reward for the current step.
+        - terminated: Whether the episode has terminated.
+        - truncated: Whether the episode has been truncated (e.g., due to reaching a time limit).
+        - info: Additional diagnostic information.
+        """
+
+        # Clip the action to the defined action space range
+        self.throttle, self.brake = np.clip(action, self.action_space.low, self.action_space.high)
         
-        # Apply the throttle and brake acoordint to action and other controls based on the basic agent for steer
-        throttle, brake = np.clip(action, self.action_space.low, self.action_space.high)
-        control = self.basic_agent.run_step()
-        self.throttle = float(throttle)
-        self.brake = float(brake)
-        control.throttle = self.throttle
-        control.brake = self.brake       
-        self.car.apply_control(control)
+        
+        reward, terminated, truncated = self.calculate_reward()
+        
+        # --------------------------- Transform to calculate the distance between the ego and the lead ------------------------ #
+        location_lead = self.lead_car.get_transform().location
+        location_agent = self.car.get_transform().location
+    
+        distance = location_agent.distance(location_lead)
+        lead_control = self.lead_basic_agent.run_step()
+        if (distance > 200):
+            self.lead_basic_agent.add_emergency_stop(lead_control)
+        
+        self.lead_car.apply_control(lead_control)
 
-        # We update the world simulation and capture an RGB and depth image
+    # Calculate the Euclidean distance
+        # Generate control commands based on the agent's action
+        control = self.basic_agent.run_step()
+        control.throttle = float(self.throttle)
+        control.brake = float(self.brake)
+        # If steering needs to be learned, include it in the action space and set `control.steer` here.
+
+        # Apply the control commands to the vehicle
+        self.car.apply_control(control)
         self.world.tick()
         self.capture = True
         self.capture_depth = True
         self.total_timesteps += 1
 
-        # Update YOLO detections and bounding boxes
+        # Process images and perform object detection
         if self.image and self.depth_image:
             temp_image = np.array(self.image.raw_data).reshape((VIEW_HEIGHT, VIEW_WIDTH, 4))[:, :, :3]
             self.results = self.model.forward(temp_image)
 
-        # Update the RL data
+        # Update state variables (ego_speed, target_speed, distance_to_lead)
         self.update_RL_input_data()
 
-        # We render the environment
+        # Render the scene (if necessary)
         self.render()
+        
+        reward, terminated, truncated = self.calculate_reward()
 
-        self.reward = 1 - abs(self.ego_speed - self.target_speed)/self.target_speed
+        # Combine observations into `obs`
+        obs = np.array([self.ego_speed, self.target_speed, self.distance_to_lead], dtype=np.float32)
+        info = {}
+
+        # Return using the Gymnasium-style API: obs, reward, terminated, truncated, info
+        return obs, reward, terminated, truncated, info
     
 
-        truncated = False
+    def calculate_reward(self):
+        """
+        Calculate the reward for the current step based on:
+        - Maintaining the target speed.
+        - Maintaining a safe distance to the lead vehicle.
+        - Avoiding collisions and extreme actions.
+        """
+
         terminated = False
+        truncated = False
+        
+        # -------------------- 1. Basic Reward: Maintain Target Speed --------------------
+        
+        reward = max(0, 1 - 0.5*(abs(self.ego_speed - self.target_speed) / (27.77 - self.target_speed)))
+
+        # -------------------- 2. Collision Penalty --------------------
+        if self.distance_to_lead < 1.0:  # Collision detected
+            print("Collision detected!")
+            reward = -1
+            terminated = True
+        # -------------------- 3. Distance-Based Reward --------------------
+              
+        optimal_distance = 10.0  # Optimal distance to maintain in meters
+        safe_margin = 5.0        # Allowable margin around optimal distance
+
+        # Reward for maintaining an optimal safe distance
+        if abs(self.distance_to_lead - optimal_distance) <= safe_margin:
+            reward += 0.5  # Reward for staying in the optimal range
+        elif self.distance_to_lead < optimal_distance:  
+            # Penalty for being too close to the lead vehicle
+            reward -= 0.3 * (optimal_distance - self.distance_to_lead)
+        elif self.distance_to_lead > optimal_distance + safe_margin:
+            # Small penalty for being too far from the lead vehicle
+            reward -= 0.1 * (self.distance_to_lead - (optimal_distance + safe_margin))
+
+
+        # -------------------- 4. Safe Distance Bonus --------------------
+        
+        if self.distance_to_lead > 20.0:
+            reward += 0.1
+            
+        # -------------------- 5. Intelligent Deceleration Reward --------------------
+        
+        safe_distance = 10.0
+        deceleration_reward = 0.2
+        deceleration_penalty = -0.5
+        if self.distance_to_lead < safe_distance:
+            # Check expected deceleration behavior
+            expected_behavior = (self.throttle < 0.3 or self.brake > 0.5)
+            if expected_behavior:
+                reward += deceleration_reward
+            else:
+                reward += deceleration_penalty
+
+        # -------------------- 6. Extreme Action Penalties --------------------
+        
+        extreme_action_penalty = -0.1
+        if self.throttle > 0.9:
+            reward += extreme_action_penalty
+        if self.brake > 0.9:
+            reward += extreme_action_penalty
+
+        # -------------------- Termination Conditions --------------------
+        
         if self.total_timesteps >= MAX_SIMULATION_LENGTH:
             terminated = True
         
-        # Return observation, reward, terminated, truncated, and info
-        return np.array([self.ego_speed, self.target_speed, self.distance_to_lead], dtype=np.float32), self.reward, terminated, truncated, {}
-    
-    # Render the environment
+        self.reward = reward
+        # Return using the Gymnasium-style API: obs, reward, terminated, truncated, info
+        return reward, terminated, truncated
+
+            
     def render(self):
         self.render_display()
+        self.draw_motion_tube()
         # self.render_bounding_boxes()
         self.render_RL_information()
         pygame.display.flip()
