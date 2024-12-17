@@ -5,9 +5,8 @@ computer_vision/datasets
 computer_vision/wandb
 computer_vision/runs
 computer_vision/.vscode
-computer_vision/yolov8s.pt
 RL/models/object_localization_weights
 RL/results
 
 # Files
-object_localization/yolov8s.pt
+computer_vision/yolov8s.pt
