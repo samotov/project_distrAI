@@ -118,6 +118,7 @@ class CarlaEnv(gym.Env):
         self.loop_state = False
         self.class_names = ["Car", "Motorcycle", "truck","Pedestrian","Bus","Stop sign","Green","Orange","Red", "Not important"]
 
+    # Get the blueprints for the RGB camera based on a filter
     def camera_blueprint(self, filter):
         """
         Returns camera blueprint.
@@ -129,7 +130,7 @@ class CarlaEnv(gym.Env):
         camera_bp.set_attribute('sensor_tick', str(SENSOR_TICK))  # Time interval for sensor updates
         return camera_bp
 
-
+    # Get the blueprints for the depth camera based on a filter
     def depth_blueprint(self, filter):
 
         """
@@ -146,6 +147,7 @@ class CarlaEnv(gym.Env):
 
         return depth_bp
 
+    # Change the synchronous mode of the world (True or Flase)
     def set_synchronous_mode(self, synchronous_mode):
         """
         Sets synchronous mode.
@@ -155,6 +157,7 @@ class CarlaEnv(gym.Env):
         settings.synchronous_mode = synchronous_mode
         self.world.apply_settings(settings)
 
+    # Setup the actor car vehicle that will be use in the environment
     def setup_car(self):
         """
         Spawns actor-vehicle to be controled.
@@ -163,13 +166,13 @@ class CarlaEnv(gym.Env):
         car_bp = self.world.get_blueprint_library().filter('vehicle.*')[0]
         location = random.choice(self.world.get_map().get_spawn_points())
         self.car = self.world.try_spawn_actor(car_bp, location)
-        while self.car == None:
+        while self.car == None:     # Try to spawn again if the spawn failed because of a collision
             print("Could not spawn car because of collision, trying again somehere else!")
             location = random.choice(self.world.get_map().get_spawn_points())
             self.car = self.world.try_spawn_actor(car_bp, location)
                 
-
-    def setup_collision_sensor(self):  #####
+    # Setup the collision sensor
+    def setup_collision_sensor(self):
         """
         Sets up collision sensor.
         """
@@ -178,6 +181,7 @@ class CarlaEnv(gym.Env):
         weak_self = weakref.ref(self)
         self.collision_sensor.listen(lambda event: self._on_collision(event))
 
+    # Setup the lane invasion sensor
     def setup_lane_invasion_sensor(self):  #####
         """
         Sets up lane invasion sensor.
@@ -187,12 +191,14 @@ class CarlaEnv(gym.Env):
         weak_self = weakref.ref(self)
         self.lane_invasion_sensor.listen(lambda event: self._on_lane_invasion(event))
 
+    # Function that will be called when a collision is detected
     def _on_collision(self, event):  #####
         """
         Collision event handler.
         """
         self.collision_hist.append(event)
 
+    # Function that will be called when a lane invasion happens
     def _on_lane_invasion(self, event):  #####
         """
         Lane invasion event handler.
@@ -369,7 +375,9 @@ class CarlaEnv(gym.Env):
 
         return data
     
+    # Render the RL informatio in the data_dict to the top left of the screen
     def render_RL_information(self):
+        # Prepare the data_dict dictionaty
         data_dict = dict()
         
         data_dict["speed"] = round(self.ego_speed, 2)
@@ -378,12 +386,13 @@ class CarlaEnv(gym.Env):
         data_dict["reward"] = round(self.reward, 2)
         data_dict["actions"] = [round(self.throttle, 2), round(self.brake, 2)]
         
-        
+        # Initialize the font
         font = pygame.font.Font(None, 16)
 
         label_surface = font.render("RL data: ", True, TEXT_COLOR)
         self.display.blit(label_surface, (0, 10))
 
+        # Draw each key and value pair on the top lef of the screen while incrementing the y position by 10
         position = 20
         
         for key in data_dict.keys():
@@ -393,6 +402,7 @@ class CarlaEnv(gym.Env):
             position += 10
     # ------------------------------------ END: Display rendering methods-----------------------------------------------------------------
 
+    # get depth information of a boundingbox in the image (x_top_view, y_top_view, depth_in_meters, angle)
     def get_depth_information(self, bbox):
         x_min, y_min, x_max, y_max = bbox.astype(int)
 
@@ -435,7 +445,7 @@ class CarlaEnv(gym.Env):
 
         return [x_top_view, y_top_view, depth_in_meters, angle]
 
-    
+    # Update the RL input data based on the new environment
     def update_RL_input_data(self):
         
         bbox_array = self.results[0].boxes.xyxy.to('cpu').numpy()  # (N, 4) array of bounding box coordinates
@@ -462,6 +472,7 @@ class CarlaEnv(gym.Env):
         self.target_speed = self.car.get_speed_limit()
         self.distance_to_lead = closest_vehicle_distance_in_range
 
+    # Destroy the car and sensors in the environment
     def destroy_car_and_sensors(self):
         # Destroy camera
         if self.camera != None:
@@ -485,11 +496,13 @@ class CarlaEnv(gym.Env):
 
     # -------------------------------------------- START:Gym implementation ------------------------------------------------------------------
     
+    # Implement a seed for the environment based on seed
     def seed(self, seed=None):
         """Set the random seed for reproducibility."""
         self.np_random, _ = gym.utils.seeding.np_random(seed)
     
     
+    # Reset the environment
     def reset(self, **kwargs):
         
         """Reset the environment."""
@@ -520,7 +533,7 @@ class CarlaEnv(gym.Env):
         # Return the initial observation
         return np.array([self.ego_speed, self.target_speed, self.distance_to_lead]), {}
     
-    
+    # Perform a step update in the environment based on an action
     def step(self, action):
 
         # Update the destination if it has been reached
@@ -564,6 +577,7 @@ class CarlaEnv(gym.Env):
         # Return observation, reward, terminated, truncated, and info
         return np.array([self.ego_speed, self.target_speed, self.distance_to_lead], dtype=np.float32), self.reward, terminated, truncated, {}
     
+    # Render the environment
     def render(self):
         self.render_display()
         # self.render_bounding_boxes()
