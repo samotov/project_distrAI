@@ -7,6 +7,7 @@ import BoundingBoxTransformer
 
 # 0: 'Car', 1: 'Pedestrian', 2: 'Van', 3: 'Cyclist', 4: 'Truck', 5: 'Misc', 6: 'Tram', 7: 'Dontcare'
 
+# Class for the regression dataset based on the totch.utils.data.Dataset format
 class BoundingBoxRegressionDataset(Dataset):
 
     def __init__(self, input_folder, transform = None, train = True):
@@ -37,10 +38,11 @@ class BoundingBoxRegressionDataset(Dataset):
 
         self.compose_data_lists(train)
 
+    # Return the size of the dataset
     def __len__(self):
         return len(self.data)
 
-
+    # Get the item at index: index
     def __getitem__(self, index):
         features, result = self.data[index]
 
@@ -49,6 +51,7 @@ class BoundingBoxRegressionDataset(Dataset):
 
         return features, result
 
+    # Compose the list of all the data
     def compose_data_lists(self, train):
         # We get a list of all the feature files and assume that the corresponding result file has the same name.
         subfolder = 'train' if train else 'val'
@@ -101,6 +104,7 @@ class BoundingBoxRegressionDataset(Dataset):
             feature_file.close()
             results_file.close()
     
+    # Visualize the data
     def visualize_data(self, amount):
         for i in range(amount):
             # We collect the data

@@ -12,20 +12,23 @@ def convert_data(input_dataset, output_dataset, last_index):
                 'traffic signs': [np.array([220, 220, 0]), 1, 150],
                 'traffic light': [np.array([250, 170, 30]), 1, 60]
                 }
-    
+    # Use the CapturedDataConverter class to convert all the data to the YOLO model
     classes = ['car', 'motorcycle', 'truck', 'pedestrian', 'bus', 'traffic signs', 'traffic light green', 'traffic light orange', 'traffic light red', 'traffic light unimportant']
     data_converter = CapturedDataConverter.CapturedDataConverter(input_dataset, output_dataset, classes, class_color_info_map)
 
+    # Print some debugging information
     next_index = data_converter.convert_data(last_index, 0.8)
     print('If you want to convert more images in the same folder use a next index of ' + str(next_index) + ' to make sure no images get overwritten.')
 
+# Read the arguments passed from the command
 parser = argparse.ArgumentParser(description="Argument parser")
 parser.add_argument("input_location", type=str, help="the location of the input dataset")
 parser.add_argument("output_location", type=str, help="the location of the output dataset")
 parser.add_argument("last_index", type=int, help="the last index of the image that has been converted")
-
 args = parser.parse_args()
 input_dataset = args.input_location
 output_dataset = args.output_location
 last_index = args.last_index
+
+# Call the function that converts the data
 convert_data(input_dataset, output_dataset, last_index)

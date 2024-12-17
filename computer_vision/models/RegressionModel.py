@@ -4,7 +4,7 @@ import wandb
 from Boundingbox3D import BoundingBox3D
 import matplotlib.pyplot as plt
 
-# We will use this model to map the 2D bouding boxes to a 3D one.
+# model that will be used to map the 2D bouding boxes to a 3D one.
 class RegressionModel(nn.Module):
     def __init__(self):
         super(RegressionModel, self).__init__()
@@ -17,6 +17,7 @@ class RegressionModel(nn.Module):
 
         self.relu = nn.ReLU()
 
+    # The forward pass
     def forward(self, x):
         x = self.relu(self.lin1(x))
         x = self.relu(self.lin2(x))
@@ -24,6 +25,7 @@ class RegressionModel(nn.Module):
         x = self.lin4(x)
         return x
     
+    # Train the model
     def train_model(self, optimizer, criterion, train_loader, validation_loader, epochs, model_save_path):
         # Initialize Weights & Biases run
         wandb.init(project="regression_model")
@@ -75,6 +77,7 @@ class RegressionModel(nn.Module):
         # End W&B run
         wandb.finish()
 
+    # Validate the model
     def validate_model(self, validation_loader, criterion):
         self.eval()
         total_loss = 0.0
@@ -94,7 +97,7 @@ class RegressionModel(nn.Module):
         print(f'Validation Loss: {avg_loss:.4f}')
         return avg_loss
 
-
+    # Visulaize the models predictions versus the ground truth
     def visualize_model(self, amount, dataset):
         amount = min(len(dataset), amount)
         for i in range(amount):

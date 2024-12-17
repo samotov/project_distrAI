@@ -3,18 +3,19 @@ import torch
 import BoundingBoxRegressionDataset
 import argparse
 
+# Read the arguments passed from the command
 parser = argparse.ArgumentParser(description="training argument parsers ")
 parser.add_argument("model_path", type=str, help="the path of model where the saved weights are stored")
 parser.add_argument("visualization_amount", type=int, help="the amount of visualized images")
-
 args = parser.parse_args()
-
 model_path = args.model_path
 visualization_amount = args.visualization_amount
 
+
+# Test the regression model
 model = RegressionModel.RegressionModel()
 
-model_weigths_path = model_path + '/best.pth'
+model_weigths_path = model_path + '/best.pth'       # Use the best weights
 state_dict = torch.load(model_weigths_path)
 model.load_state_dict(state_dict)
 

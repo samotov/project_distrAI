@@ -21,6 +21,8 @@ import argparse
 # filter_start_val_index: If you don't want to override validation images from a previous run use the index for the next image otherwise use 0
 # You can find these values from the previous run printed in the terminal!!
 
+
+# Read the arguments passed from the command
 parser = argparse.ArgumentParser(description="image filtering argument parsers ")
 parser.add_argument("dataset_input_yaml", type=str, help="the location and name of the input yaml file in yolo format")
 parser.add_argument("dest_dir", type=str, help="the name of the dataset folder of the output dataset and yaml file")
@@ -36,7 +38,9 @@ start_index = args.start_index
 filter_start_train_index = args.filter_start_train_index
 filter_start_val_index = args.filter_start_val_index
 
+# Use the YoloDatasetFilterer class to filter the dataset
 dataset_filterer = YoloDatasetFilterer.YoloDatasetFilterer(source_yaml_file, dest_dir)
 dataset_filterer.filter_data(start_index, filter_start_train_index, filter_start_val_index)
 
+# Print some debugging information
 print("Finished processing all images.")

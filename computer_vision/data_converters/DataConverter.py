@@ -1,11 +1,13 @@
 import os
 import yaml
 
+# Parent class for all the data converters
 class DataConverter:
     def __init__(self, output_dir, classes):
         self.output_dir = output_dir
         self.classes = classes
 
+    # Creates the ouput folders in the YOLO format
     def create_data_folders(self):
         # We define the subfolder structure
         folders = [
@@ -26,6 +28,7 @@ class DataConverter:
             else:
                 print(f"Folder already exists: {folder_path}")
 
+    # Creates the yaml file of the dataset in the YOLO format
     def create_yaml_file(self):
         yaml_path = self.output_dir + ".yaml"
         # We define the content for the YAML file

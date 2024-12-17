@@ -6,6 +6,7 @@ import yaml
 from PIL import Image
 from data_converters import DataConverter
 
+# Data filterer class for datasets in the YOLO format inhereting from the DataConverter class
 class YoloDatasetFilterer(DataConverter.DataConverter):
     def __init__(self, source_yaml_file, output_dir):
         with open(source_yaml_file, 'r') as file:
@@ -17,6 +18,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
         self.create_yaml_file()
         self.create_data_folders()
 
+    # Draw boundingboxes on the screen 
     def draw_ractangles(self, screen, bounding_boxes, highligted_rectangle, width, height):
         for bbox_index in range(len(bounding_boxes)):
             class_number, dimentions = bounding_boxes[bbox_index]
@@ -38,6 +40,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
             text_surface = font.render(str(label), True, color)  # True for anti-aliasing
             screen.blit(text_surface, (x, y - 15))
 
+    # Filter the data based on different indexes and to be able to start anywhere you want
     def filter_data(self, start_index_org_data, filter_image_index_train, filter_image_index_val):
         # We initialize the indexes for the next validation and training image
         filtered_image_index = {'train': filter_image_index_train, 'val': filter_image_index_val}
@@ -189,6 +192,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
         # Quit pygame
         pygame.quit()
     
+    # Get the boundingboxes from the label.txt file from a specific path
     def get_bounding_boxes(self, label_input_path):
         # We get the boundingboxes from the file
         bounding_boxes = list()
@@ -201,7 +205,7 @@ class YoloDatasetFilterer(DataConverter.DataConverter):
         
         return bounding_boxes
     
-
+    # Get the key that is pressed on the keyboard (process waits until a key is pressed)
     def get_key_press(self):
         # We keep waiting for an enter or backspace key to be pressed
         scanning =True

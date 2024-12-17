@@ -3,6 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import os
 
+# Class for the object localization model that will be used for detecting different object in images
 class ObjectLocalizationModel:
 
     def __init__(self, weights):
@@ -11,15 +12,17 @@ class ObjectLocalizationModel:
         else:
             self.model = YOLO(weights)
 
+    # The forward pass of the model
     def forward(self, image_path):
         results = self.model(image_path)
         return results
 
+    # Train the model based on numerous parameters
     def train_model(self, yaml_file, num_epochs, batch_size = 16, image_conversion_size = 640):
         results = self.model.train(data=yaml_file, epochs= num_epochs, imgsz=image_conversion_size, batch= batch_size)
         return results
 
-
+    # Test the model based on a a folder containing test images
     def testYoloModel(self, test_folder):
         # get the image files
         image_files = [f for f in os.listdir(test_folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
@@ -30,7 +33,7 @@ class ObjectLocalizationModel:
             results = self.forward(image_path)
             self.visualize_results(results, image_path)
     
-
+    # Visualize the results on an image using boundingboxes with labels
     def visualize_results(self, results, image_path):
         object_classes = results[0].boxes.cls.to('cpu').tolist()
         bboxes_xyxy = results[0].boxes.xyxy.to('cpu').tolist()
@@ -58,6 +61,7 @@ class ObjectLocalizationModel:
         plt.pause(1)
         plt.close()
     
+    # Visualize the data that the model will be trained on
     def visualize_data(self, amount, data_path):
         for i in range(amount):
             # We initialize the image path and results path

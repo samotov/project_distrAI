@@ -2,6 +2,7 @@ import torchvision.datasets
 from data_converters import KittiDataConverter
 import argparse
 
+# Read the arguments passed from the command
 parser = argparse.ArgumentParser(description="Argument parser")
 parser.add_argument("input_location", type=str, help="the location of the input dataset")
 parser.add_argument("output_location", type=str, help="the location of the output dataset")
@@ -19,6 +20,7 @@ if download_needed == 0:
 else:
     download = True
 
+# Use the KittiDataConverter class to convert the data to the YOLO format
 kitti_dataset = torchvision.datasets.Kitti(input_dataset, download=download)
 type_map = ['Car', 'Pedestrian', 'Van', 'Cyclist', 'Truck', 'Misc', 'Tram', 'Dontcare']
 data_converter = KittiDataConverter.KittiDataConverter(input_dataset, output_dataset, type_map, kitti_dataset)

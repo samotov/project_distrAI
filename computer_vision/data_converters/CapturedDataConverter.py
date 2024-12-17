@@ -3,6 +3,7 @@ import os
 import numpy as np
 from data_converters import DataConverter
 
+# Data converter class for captured data inhereting from the DataConverter class
 class CapturedDataConverter(DataConverter.DataConverter):
     def __init__(self, input_dir, output_dir, classes, class_color_info_map):
         super().__init__(output_dir, classes)
@@ -13,7 +14,7 @@ class CapturedDataConverter(DataConverter.DataConverter):
         self.create_data_folders()
         self.create_yaml_file()
 
-
+    # Get a list of the 2D boundingboxes from a segmantation image based on the class_color_info_map in the initialization
     def get_2D_bounding_box_from_segmeted_image(self, segmented_image_path):
         # We load the image
         img = cv2.imread(segmented_image_path)
@@ -57,6 +58,7 @@ class CapturedDataConverter(DataConverter.DataConverter):
 
         return boundingboxes_per_class
 
+    # Convert the data based on a first index to start anywhere you want and a training percentage
     def convert_data(self, first_index, train_percentage):
         # We print some information
         print('Converting data in folder ' + self.input_dir)
@@ -134,7 +136,7 @@ class CapturedDataConverter(DataConverter.DataConverter):
         print('Succesfully converted the data!\n')
         return current_index
 
-
+    # Draw rectangles based on a boundingbox
     def draw_rectangles(self, image_path, bounding_boxes):
         image = cv2.imread(image_path)
 
@@ -151,39 +153,3 @@ class CapturedDataConverter(DataConverter.DataConverter):
 
         # Optionally save the modified image
         cv2.imwrite('output_image.jpg', image)
-
-    """def create_data_folders(self):
-        # We define the subfolder structure
-        folders = [
-            'images/train',
-            'images/val',
-            'labels/train',
-            'labels/val']
-
-        # We loop through each folder and create it
-        for folder in folders:
-            # Create the full path
-            folder_path = os.path.join('datasets', self.output_dir, folder)
-
-            # Check if the folder already exists, if not, create it
-            if not os.path.exists(folder_path):
-                os.makedirs(folder_path)
-                print(f"Created folder: {folder_path}")
-            else:
-                print(f"Folder already exists: {folder_path}")
-
-    def create_yaml_file(self):
-        yaml_path = self.output_dir + ".yaml"
-        # We define the content for the YAML file
-
-        data = {
-            'train': os.path.join(self.output_dir, "images", "train"),    # Path to the training data
-            'val': os.path.join(self.output_dir, "images", "val"),        # Path to the validation data
-            'nc': len(self.class_color_info_map.keys()),        # Number of classes
-            'names': list(self.class_color_info_map.keys())     # List of class names
-        }
-
-        # We write the data to the YAML file
-        with open(yaml_path, 'w') as file:
-            yaml.dump(data, file)
-        print(f"YAML file created: {yaml_path}")"""

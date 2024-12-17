@@ -3,6 +3,7 @@ import math
 
 # Information about the axis of the different sensors:  https://www.cvlibs.net/publications/Geiger2013IJRR.pdf
 
+# Class for transforming the 3D boundingboxes of the Kitti dataset to the universal one used in the other code
 class BoundingBoxTransformer:
     def __init__(self, x_center, y2, z_center, h, w, l, rotation_y):
         self.x_center = x_center
@@ -15,6 +16,7 @@ class BoundingBoxTransformer:
         self.points = list()
         self.transform_coordinates()
     
+    # Transoform the coordinates to the universal format
     def transform_coordinates(self):
         # The translation to the origin
         t_origin = np.array([
@@ -63,5 +65,6 @@ class BoundingBoxTransformer:
         # from homogenous coordinates to cartesian ones.
         self.points = [(t_axis @ (t_back @ (t_rot @ (t_origin @ np.array(point))))).tolist()[:-1] for point in points]
 
+    # Get the cornerpoints of the boundingbox
     def get_cornerpoints(self):
         return self.points[0], self.points[6]
