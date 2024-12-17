@@ -1,0 +1,9 @@
+names:
+- car
+- motorcycle
+- truck
+- pedestrian
+- bus
+nc: 5
+train: filtered_dataset\images\train
+val: filtered_dataset\images\val

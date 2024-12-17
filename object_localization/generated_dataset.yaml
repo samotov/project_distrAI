@@ -1,0 +1,14 @@
+names:
+- car
+- motorcycle
+- truck
+- pedestrian
+- bus
+- traffic signs
+- traffic light green
+- traffic light orange
+- traffic light red
+- traffic light unimportant
+nc: 10
+train: generated_dataset\images\train
+val: generated_dataset\images\val

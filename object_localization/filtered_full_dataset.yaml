@@ -1,0 +1,14 @@
+names:
+- car
+- motorcycle
+- truck
+- pedestrian
+- bus
+- traffic signs
+- traffic light green
+- traffic light orange
+- traffic light red
+- traffic light unimportant
+nc: 10
+train: filtered_full_dataset/images/train
+val: filtered_full_dataset/images/val
