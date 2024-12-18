@@ -33,4 +33,26 @@ In the main folders there are also subfolders:
 | FOLDER: RL |
 +------------+
 
+This folder contains all files used for training the RL agent:
+    1) agents: contains all files needed to run Basic Agent which was used for steering.
+    2) mock: simple environment for training and testing 
+    3) models: contains trained weights for computer vision which are used as input for the RL
+    4) results: results from trainings
+    5) tools: usefull modules necessary for the Basic Agent to work
+    *) CarlaEnv.py: the Carla environment converted into a Gym environment used for training
+    *) depth_conversion.py: functions used for extracting distance from RGB image
+    *) RL_agent.py: the SAC agent and training/evaluation methods
+    *) spawn.py: script used for spawning and removing entities from the Carla environment.
+
+
++-------------------+
+| FOLDER: ACC agent |
++-------------------+
+
+This folder contains everything needed to implement our ACC agent into Carla example scripts
+    1) agents: contains all files needed to run Basic Agent and the ACC agent which is based on it.
+    2) controllers: contains the class which will implement the RL agent into the ACC agent.
+    3) models: contains trained weights for computer vision and RL
+    4) sensors: contains all modules implementing and controlling sensors
+    5) tools: usefull modules necessary for the Basic Agent to work
 
