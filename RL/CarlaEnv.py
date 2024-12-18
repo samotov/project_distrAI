@@ -58,12 +58,12 @@ class CarlaEnv(gym.Env):
         self.np_random = None  # For reproducibility
         
         # Action space: throttle and brake only (continuous between 0.0 and 1.0)
-        self.action_space = gym.spaces.Box(low=np.array([0.0, 0.0]), high=np.array([1.0, 1.0]))
+        self.action_space = gym.spaces.Box(low=np.array([0.0]), high=np.array([1.0]))
 
         # Observation space: ego_speed, target_speed, distance_to_lead (continuous values)
         self.observation_space = gym.spaces.Box(
             low=np.array([0.0, 0.0, 0.0], dtype=np.float32),  # Minimum values
-            high=np.array([50.0, 50.0, 100.0], dtype=np.float32),  # Maximum values (adjust as needed)
+            high=np.array([27.77, 27.77, 300.], dtype=np.float32),  # Maximum values (adjust as needed)
             )
                 
         # Environment simulition intialization
@@ -657,8 +657,14 @@ class CarlaEnv(gym.Env):
         """
 
         # Clip the action to the defined action space range
-        self.throttle, self.brake = np.clip(action, self.action_space.low, self.action_space.high)
+        action = np.clip(action, self.action_space.low, self.action_space.high)
         
+        if action > 0.5:
+            self.throttle = (action - 0.5) * 2
+            self.brake = 0
+        else:
+            self.throttle = 0
+            self.brake = (action * 2)
         
         reward, terminated, truncated = self.calculate_reward()
         
@@ -715,60 +721,21 @@ class CarlaEnv(gym.Env):
         - Maintaining a safe distance to the lead vehicle.
         - Avoiding collisions and extreme actions.
         """
-
+        
+        reward = 0.0
         terminated = False
         truncated = False
         
-        # -------------------- 1. Basic Reward: Maintain Target Speed --------------------
+        k = 0.1 # Exponential decay rate (tune this value to control the reward shape)
         
-        reward = max(0, 1 - 0.5*(abs(self.ego_speed - self.target_speed) / (27.77 - self.target_speed)))
-
-        # -------------------- 2. Collision Penalty --------------------
-        if self.distance_to_lead < 1.0:  # Collision detected
-            print("Collision detected!")
-            reward = -1
+        if self.target_speed > 0:
+            speed_ratio = min(self.ego_speed / self.target_speed, 1.0)  # Normalize speed to [0, 1]
+            reward = math.exp(-k * speed_ratio)
+        
+         # Penalize collisions
+        if self.distance_to_lead <= 0.5:  # Collision threshold
+            reward -= 1  # Large penalty for collisions
             terminated = True
-        # -------------------- 3. Distance-Based Reward --------------------
-              
-        optimal_distance = 10.0  # Optimal distance to maintain in meters
-        safe_margin = 5.0        # Allowable margin around optimal distance
-
-        # Reward for maintaining an optimal safe distance
-        if abs(self.distance_to_lead - optimal_distance) <= safe_margin:
-            reward += 0.5  # Reward for staying in the optimal range
-        elif self.distance_to_lead < optimal_distance:  
-            # Penalty for being too close to the lead vehicle
-            reward -= 0.3 * (optimal_distance - self.distance_to_lead)
-        elif self.distance_to_lead > optimal_distance + safe_margin:
-            # Small penalty for being too far from the lead vehicle
-            reward -= 0.1 * (self.distance_to_lead - (optimal_distance + safe_margin))
-
-
-        # -------------------- 4. Safe Distance Bonus --------------------
-        
-        if self.distance_to_lead > 20.0:
-            reward += 0.1
-            
-        # -------------------- 5. Intelligent Deceleration Reward --------------------
-        
-        safe_distance = 10.0
-        deceleration_reward = 0.2
-        deceleration_penalty = -0.5
-        if self.distance_to_lead < safe_distance:
-            # Check expected deceleration behavior
-            expected_behavior = (self.throttle < 0.3 or self.brake > 0.5)
-            if expected_behavior:
-                reward += deceleration_reward
-            else:
-                reward += deceleration_penalty
-
-        # -------------------- 6. Extreme Action Penalties --------------------
-        
-        extreme_action_penalty = -0.1
-        if self.throttle > 0.9:
-            reward += extreme_action_penalty
-        if self.brake > 0.9:
-            reward += extreme_action_penalty
 
         # -------------------- Termination Conditions --------------------
         

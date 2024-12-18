@@ -2,18 +2,13 @@ import os
 import torch
 
 import spawn
-from stable_baselines3 import PPO
+from stable_baselines3 import SAC
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize
 from CarlaEnv import CarlaEnv
 
 # Check GPU availability
-if torch.cuda.is_available():
-    print("GPU is available. Using CUDA.")
-    device = "cpu"
-else:
-    print("GPU is not available. Using CPU.")
-    device = "cpu"
+device = "cpu"
 
 
 # Set environment variable to avoid OpenMP issues
@@ -26,18 +21,10 @@ gym_env = VecNormalize(gym_env, norm_reward=False)  # Normalize observations for
 # Step 2: Initialize the PPO model
 # Instantiate the agent
 # Instantiate the PPO agent with the given hyperparameters
-RL_model = PPO(
+RL_model = SAC(
     policy="MlpPolicy",
     env=gym_env,
     gamma=0.9,                     # Discount factor
-    gae_lambda=0.95,               # GAE lambda
-    use_sde=True,                  # State-dependent exploration
-    sde_sample_freq=4,             # SDE sampling frequency
-    learning_rate=1e-3,            # Learning rate
-    ent_coef=0.0,                  # Entropy coefficient
-    n_steps=128,                   # Number of steps to run per environment per update
-    # n_epochs=10,                 # Number of epochs when optimizing the surrogate loss
-    clip_range=0.2,                # Clipping parameter for PPO
     verbose=1                      # Verbosity level
 )
 
