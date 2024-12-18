@@ -2,7 +2,7 @@ import os
 from stable_baselines3 import SAC
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize, VecFrameStack
-from simple_environment import Rl_environment
+from mock_env import Rl_environment
 import wandb
 import pygame
 

@@ -1,8 +1,6 @@
-from turtle import speed
 import gymnasium as gym
 import numpy as np
 import wandb
-import pygame
 
 
 
